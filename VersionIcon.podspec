@@ -1,27 +1,18 @@
-Pod::Spec.new do |spec|
+Pod::Spec.new do |s|
+ s.name = 'VersionIcon'
+ s.version = '0.9.1'
+ s.license = 'Apache License, Version 2.0'
+ s.summary = 'VersionIcon prepares iOS icon with ribbon, text and version info overlay'
+ s.homepage = 'https://github.com/DanielCech/VersionIcon'
+ s.social_media_url = 'https://twitter.com/DanielCech'
+ s.authors = { "Daniel Čech": "daniel.cech@gmail.com" }
+ s.source = { :git => "https://github.com/DanielCech/VersionIcon.git", :tag => +s.version.to_s }
+ s.platforms = { :ios => "11.0", :osx => "10.10", :tvos => "11.0", :watchos => "2.0" }
+ s.requires_arc = true
 
-  spec.name         = "VersionIcon"
-  spec.version      = "0.9.0"
-  spec.license      = "Apache License, Version 2.0"
-
-  spec.summary      = "VersionIcon prepares iOS icon with ribbon, text and version info overlay"
-
-  spec.homepage     = "https://github.com/DanielCech/VersionIcon"
-  spec.documentation_url = "https://github.com/DanielCech/VersionIcon"
-  spec.screenshots  = [ "https://i.ibb.co/4Zgprnc/AppIcon.png" ]
-
-  spec.author             = { "Daniel Čech" => "daniel.cech@gmail.com" }
-  spec.social_media_url   = "https://twitter.com/DanielCech"
-
-  spec.requires_arc = true
-  spec.source = { :git => "https://github.com/DanielCech/VersionIcon.git", :tag => spec.version.to_s }
-
-  spec.default_subspec = "Bin"
-  spec.subspec "Bin" do |ss|
-    ss.source_files = "Bin/*.*"
-  end
-
-  spec.ios.deployment_target     = '8.0'
-  spec.tvos.deployment_target    = '9.0'
-
+ s.default_subspec = "Core"
+ s.subspec "Core" do |ss|
+     ss.source_files  = "Bin/*"
+     ss.framework  = "Foundation"
+ end
 end
