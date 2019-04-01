@@ -10,7 +10,7 @@ Pod::Spec.new do |s|
   s.ios.deployment_target     = '8.0'
   s.requires_arc              = true
   s.source                    = { :git => 'https://github.com/DanielCech/VersionIcon.git', :tag => s.version.to_s }
-  s.source_files              = 'Sources/**/*'
+  s.source_files              = 'Bin/**/*'
   # s.resource_bundle           = { 'PKHUDResources' => 'PKHUD/*.xcassets' }
   s.swift_version             = '4.0'
 end
