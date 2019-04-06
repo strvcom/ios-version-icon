@@ -6,8 +6,8 @@
         "repositoryURL": "https://github.com/JohnSundell/Files.git",
         "state": {
           "branch": null,
-          "revision": "06f95bd1bf4f8d5f50bc6bb30b808c253acd4c88",
-          "version": "2.2.1"
+          "revision": "a84615f4558151fab52ac38df697ce2442991f93",
+          "version": "2.3.0"
         }
       },
       {
@@ -15,8 +15,8 @@
         "repositoryURL": "https://github.com/DanielCech/Moderator.git",
         "state": {
           "branch": null,
-          "revision": "4dd1a08cf27d78a948acdbec3282aa3f1be3cb63",
-          "version": "0.5.3"
+          "revision": "b9c7e870caba30204903cf768367b7a5dc4ae3fa",
+          "version": "0.5.6"
         }
       },
       {
@@ -24,8 +24,8 @@
         "repositoryURL": "https://github.com/DanielCech/ScriptToolkit.git",
         "state": {
           "branch": null,
-          "revision": "e8a7b503762df0ee34fc4fda0df65971160997fa",
-          "version": "0.1.36"
+          "revision": "1e8865a0cda840dea1f22f4ca9fcca64f9a582b5",
+          "version": "0.1.38"
         }
       },
       {
