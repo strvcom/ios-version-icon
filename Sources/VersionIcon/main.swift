@@ -62,18 +62,19 @@ struct ImageInfo: Codable {
 
 func getAppSetup(scriptSetup: ScriptSetup) throws -> AppSetup {
     // TODO: uncomment, temporary
-//    guard
-//        let sourceRootPath = main.env["SRCROOT"],
-//        let projectDir = main.env["PROJECT_DIR"],
-//        let infoPlistFile = main.env["INFOPLIST_FILE"]
-//        else {
-//            print("Missing environment variables")
-//            throw ScriptError.moreInfoNeeded(message: "Missing required environment variables: SRCROOT, PROJECT_DIR, INFOPLIST_FILE")
-//    }
+    guard
+        let sourceRootPath = main.env["SRCROOT"],
+        let projectDir = main.env["PROJECT_DIR"],
+        let infoPlistFile = main.env["INFOPLIST_FILE"]
+        else {
+            print("Missing environment variables")
+            throw ScriptError.moreInfoNeeded(message: "Missing required environment variables: SRCROOT, PROJECT_DIR, INFOPLIST_FILE")
+    }
     
-    let sourceRootPath = "/Users/danielcech/Documents/[Development]/[Projects]/RoboticArmApp"
-    let projectDir = "/Users/danielcech/Documents/[Development]/[Projects]/RoboticArmApp"
-    let infoPlistFile = "Arm/Info.plist"
+    // For debugging purpuses
+//    let sourceRootPath = "/Users/danielcech/Documents/[Development]/[Projects]/RoboticArmApp"
+//    let projectDir = "/Users/danielcech/Documents/[Development]/[Projects]/RoboticArmApp"
+//    let infoPlistFile = "Arm/Info.plist"
 
 
     print("  sourceRootPath: \(sourceRootPath)")
