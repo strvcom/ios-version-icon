@@ -8,10 +8,10 @@ import ScriptToolkit
 struct DesignStyle {
     var ribbon: String?
     var title: String?
-    var fillColor: NSColor
-    var strokeColor: NSColor
-    var strokeWidth: Double
-    var font: String
+    var titleFillColor: NSColor
+    var titleStrokeColor: NSColor
+    var titleStrokeWidth: Double
+    var titleFont: String
     var titleSizeRatio: Double
     var horizontalTitlePositionRatio: Double
     var verticalTitlePositionRatio: Double
@@ -23,6 +23,17 @@ struct ScriptSetup {
     var appIconOriginal: String
     var scriptPath: String
 }
+
+struct AppSetup {
+    var sourceRootPath: String
+    var projectDir: String
+    var infoPlistFile: String
+    var appIconFolder: Folder
+    var appIconContents: IconMetadata
+    var originalAppIconFolder: Folder
+    var originalAppIconContents: IconMetadata
+}
+
 
 // MARK: - Image JSON structs
 
@@ -42,19 +53,10 @@ struct IconMetadata: Codable {
 struct ImageInfo: Codable {
     var size: String
     var idiom: String
-    var filename: String
+    var filename: String?
     var scale: String
 }
 
-struct AppSetup {
-    var sourceRootPath: String
-    var projectDir: String
-    var infoPlistFile: String
-    var appIconFolder: Folder
-    var appIconContents: IconMetadata
-    var originalAppIconFolder: Folder
-    var originalAppIconContents: IconMetadata
-}
 
 // MARK: - Helpers
 
@@ -69,8 +71,8 @@ func getAppSetup(scriptSetup: ScriptSetup) throws -> AppSetup {
 //            throw ScriptError.moreInfoNeeded(message: "Missing required environment variables: SRCROOT, PROJECT_DIR, INFOPLIST_FILE")
 //    }
     
-    let sourceRootPath = "/Users/dan/Documents/[Development]/[Projects]/RoboticArmApp"
-    let projectDir = "/Users/dan/Documents/[Development]/[Projects]/RoboticArmApp"
+    let sourceRootPath = "/Users/danielcech/Documents/[Development]/[Projects]/RoboticArmApp"
+    let projectDir = "/Users/danielcech/Documents/[Development]/[Projects]/RoboticArmApp"
     let infoPlistFile = "Arm/Info.plist"
 
 
@@ -100,10 +102,16 @@ func getAppSetup(scriptSetup: ScriptSetup) throws -> AppSetup {
 }
 
 func iconMetadata(iconFolder: Folder) throws -> IconMetadata {
-    let contentsFile = try iconFolder.file(at: "Contents.json")
+    let contentsFile = try iconFolder.file(named: "Contents.json")
     let jsonData = try contentsFile.read()
-    let iconMetadata = try JSONDecoder().decode(IconMetadata.self, from: jsonData)
-    return iconMetadata
+    do {
+        let iconMetadata = try JSONDecoder().decode(IconMetadata.self, from: jsonData)
+        return iconMetadata
+    }
+    catch {
+        print(error)
+    }
+    fatalError()
 }
 
 func getVersionText(appSetup: AppSetup) -> String {
@@ -159,14 +167,14 @@ func generateIcon(
     print("  Annotating")
     let resultImage = try combinedImage.annotate(
         text: version,
-        font: designStyle.font,
+        font: designStyle.titleFont,
         size: realSize.width * CGFloat(designStyle.titleSizeRatio),
         horizontalTitlePosition: CGFloat(designStyle.horizontalTitlePositionRatio),
         verticalTitlePosition: CGFloat(designStyle.verticalTitlePositionRatio),
         titleAlignment: designStyle.titleAlignment,
-        fill: designStyle.fillColor,
-        stroke: designStyle.strokeColor,
-        strokeWidth: CGFloat(designStyle.strokeWidth)
+        fill: designStyle.titleFillColor,
+        stroke: designStyle.titleStrokeColor,
+        strokeWidth: CGFloat(designStyle.titleStrokeWidth)
     )
 
     let resizedIcon = try resultImage.copy(size: newSize)
@@ -174,31 +182,28 @@ func generateIcon(
     try resizedIcon.savePNGRepresentationToURL(url: URL(fileURLWithPath: appIconFile.path))
 }
 
-func restoreIcon(_ icon: String) throws {
+func restoreIcon(
+    size: String,
+    scale: String,
+    scriptSetup: ScriptSetup,
+    appSetup: AppSetup) throws {
+    
     guard
-        let sourceRootPath = main.env["SRCROOT"]
+        let originalAppIconFileName = appSetup.originalAppIconContents.imageInfo(forSize: size, scale: scale)?.filename,
+        let originalAppIconImageFile = appSetup.originalAppIconFolder.findFirstFile(name: originalAppIconFileName)
     else {
-        print("Missing environment variables")
-        throw ScriptError.moreInfoNeeded(message: "Missing required environment variables: SRCROOT, PROJECT_DIR, INFOPLIST_FILE")
+        throw ScriptError.fileNotFound(message: "Original icon with \(size):\(scale) not found in \(appSetup.originalAppIconFolder.path) folder")
+    }
+    
+    guard
+        let appIconFileName = appSetup.appIconContents.imageInfo(forSize: size, scale: scale)?.filename,
+        let appIconImageFile = appSetup.appIconFolder.findFirstFile(name: appIconFileName)
+    else {
+        throw ScriptError.fileNotFound(message: "Target icon with \(size):\(scale) not found in \(appSetup.appIconFolder.path) folder")
     }
 
-    let sourceFolder = try Folder(path: sourceRootPath)
-
-    guard let originalAppIconFolder = sourceFolder.findFirstFolder(name: "AppIconOriginal.appiconset") else {
-        throw ScriptError.folderNotFound(message: "AppIconOriginal.appiconset - source icon asset for modifications")
-    }
-
-    guard let baseImageFile = originalAppIconFolder.findFirstFile(name: icon) else {
-        throw ScriptError.fileNotFound(message: "\(icon) in AppIconOriginal.appiconset folder")
-    }
-
-    guard let appIconFolder = sourceFolder.findFirstFolder(name: "AppIcon.appiconset") else {
-        throw ScriptError.folderNotFound(message: "AppIcon.appiconset - icon asset folder")
-    }
-    let targetPath = appIconFolder.path.appendingPathComponent(path: icon)
-
-    try FileManager.default.removeItem(atPath: targetPath)
-    try baseImageFile.copy(to: appIconFolder)
+    try FileManager.default.removeItem(atPath: appIconImageFile.path)
+    try originalAppIconImageFile.copy(to: appSetup.appIconFolder)
 }
 
 
@@ -208,11 +213,15 @@ func restoreIcon(_ icon: String) throws {
 let moderator = Moderator(description: "VersionIcon prepares iOS icon with ribbon, text and version info overlay")
 moderator.usageFormText = "versionIcon <params>"
 
+// ScriptSetup elements
+
 let appIcon = moderator.add(Argument<String?>
     .optionWithValue("appIcon", name: "The name of app icon asset", description: "The asset that is modified by script.").default("AppIcon"))
 
 let appIconOriginal = moderator.add(Argument<String?>
 .optionWithValue("appIconOriginal", name: "The name of original app icon asset", description: "This asset is used as backup of original icon.").default("AppIconOriginal"))
+
+// DesignStyle elements
 
 var ribbon = moderator.add(Argument<String?>
     .optionWithValue("ribbon", name: "Icon ribbon color", description: "Name of PNG file in Ribbons folder or absolute path to Ribbon image"))
@@ -226,57 +235,73 @@ let titleFillColor = moderator.add(Argument<String?>
 let titleStrokeColor = moderator.add(Argument<String?>
     .optionWithValue("strokeColor", name: "Title stroke color", description: "The stroke color of version title in #xxxxxx hexa format.").default("#000000"))
 
+let titleStrokeWidth = moderator.add(Argument<String?>
+    .optionWithValue("strokeWidth", name: "Version Title Stroke Width", description: "Version title stroke width related to icon width.").default("0.03"))
+
 let titleFont = moderator.add(Argument<String?>
     .optionWithValue("font", name: "Version label font", description: "Font used for version title.").default("Impact"))
 
-let titleSize = moderator.add(Argument<String?>
+let titleSizeRatio = moderator.add(Argument<String?>
     .optionWithValue("titleSize", name: "Version Title Size Ratio", description: "Version title size related to icon width.").default("0.2"))
 
-let horizontalTitlePosition = moderator.add(Argument<String?>
+let horizontalTitlePositionRatio = moderator.add(Argument<String?>
     .optionWithValue("horizontalTitlePosition", name: "Version Title Size Ratio", description: "Version title position related to icon width.").default("0.5"))
 
-let verticalTitlePosition = moderator.add(Argument<String?>
+let verticalTitlePositionRatio = moderator.add(Argument<String?>
     .optionWithValue("verticalTitlePosition", name: "Version Title Size Ratio", description: "Version title position related to icon width.").default("0.2"))
 
 let titleAlignment = moderator.add(Argument<String?>
     .optionWithValue("titleAlignment", name: "Version Title Text Alignment", description: "Possible values are left, center, right.").default("center"))
 
-let strokeWidth = moderator.add(Argument<String?>
-    .optionWithValue("strokeWidth", name: "Version Title Stroke Width", description: "Version title stroke width related to icon width.").default("0.03"))
+// AppSetup elements
 
 let resourcesPath = moderator.add(Argument<String?>
     .optionWithValue("resources", name: "VersionIcon resources path", description: "Path where Ribbons and Titles folders are located. It is not necessary to set when script is executed as a build phase in Xcode"))
-
-let iPhone = moderator.add(.option("iphone", description: "Generate iPhone icons"))
-
-let iPad = moderator.add(.option("ipad", description: "Generate iPad icons"))
 
 let original = moderator.add(.option("original", description: "Use original icon with no modifications (for production)"))
 
 do {
     try moderator.parse()
-    
-    guard iPhone.value || iPad.value else {
-        print(moderator.usagetext+"\n")
-        throw ScriptError.argumentError(message: "You must enter at least one of parameters --iphone or --ipad")
-    }
 
     guard let basePath = resourcesPath.value ?? main.env["PODS_ROOT"]?.appendingPathComponent(path: "VersionIcon/Bin") else {
         throw ScriptError.argumentError(message: "You must specify the script path using --scriptPath parameter")
     }
+    
+    let scriptSetup = ScriptSetup(appIcon: appIcon.value, appIconOriginal: appIconOriginal.value, scriptPath: basePath)
+    let appSetup = try getAppSetup(scriptSetup: scriptSetup)
 
     guard !original.value else {
-        if iPhone.value {
-            try restoreIcon("AppIcon60x60@2x.png")
+            // iPhone App Icon @2x
+        try restoreIcon(
+            size: "60x60",
+            scale: "2x",
+            scriptSetup: scriptSetup,
+            appSetup: appSetup
+        )
+        
+        // iPhone App Icon @3x
+        try restoreIcon(
+            size: "60x60",
+            scale: "3x",
+            scriptSetup: scriptSetup,
+            appSetup: appSetup
+        )
 
-            try restoreIcon("AppIcon60x60@3x.png")
-        }
-
-        if iPad.value {
-            try restoreIcon("AppIcon76x76~ipad.png")
-
-            try restoreIcon("AppIcon76x76@2x~ipad.png")
-        }
+        // iPad App Icon @2x
+        try restoreIcon(
+            size: "76x76",
+            scale: "2x",
+            scriptSetup: scriptSetup,
+            appSetup: appSetup
+        )
+        
+        // iPad App Icon @3x
+        try restoreIcon(
+            size: "76x76",
+            scale: "3x",
+            scriptSetup: scriptSetup,
+            appSetup: appSetup
+        )
         exit(0)
     }
 
@@ -288,71 +313,68 @@ do {
         title.value = basePath.appendingPathComponent(path: "Titles/\(unwrappedTitle)")
     }
 
-    guard let titleSizeRatio = Double(titleSize.value) else { throw ScriptError.argumentError(message: "Invalid titlesize argument") }
-    guard let horizontalTitlePosition = Double(horizontalTitlePosition.value) else { throw ScriptError.argumentError(message: "Invalid horizontalTitlePosition argument") }
-    guard let verticalTitlePosition = Double(verticalTitlePosition.value) else { throw ScriptError.argumentError(message: "Invalid verticalTitlePosition argument") }
+    guard let convertedTitleSizeRatio = Double(titleSizeRatio.value) else { throw ScriptError.argumentError(message: "Invalid titlesize argument") }
+    guard let convertedHorizontalTitlePosition = Double(horizontalTitlePositionRatio.value) else { throw ScriptError.argumentError(message: "Invalid horizontalTitlePosition argument") }
+    guard let convertedVerticalTitlePosition = Double(verticalTitlePositionRatio.value) else { throw ScriptError.argumentError(message: "Invalid verticalTitlePosition argument") }
     guard titleAlignment.value == "left" || titleAlignment.value == "center" || titleAlignment.value == "right" else { throw ScriptError.argumentError(message: "Invalid titleAlignment argument") }
-    guard let strokeWidth = Double(strokeWidth.value) else { throw ScriptError.argumentError(message: "Invalid strokewidth argument") }
-    guard let fillColor = NSColor(hexString: titleFillColor.value) else { throw ScriptError.argumentError(message: "Invalid fillcolor argument") }
-    guard let strokeColor = NSColor(hexString: titleStrokeColor.value) else { throw ScriptError.argumentError(message: "Invalid strokecolor argument") }
+    guard let convertedTitleFillColor = NSColor(hexString: titleFillColor.value) else { throw ScriptError.argumentError(message: "Invalid fillcolor argument") }
+    guard let convertedTitleStrokeColor = NSColor(hexString: titleStrokeColor.value) else { throw ScriptError.argumentError(message: "Invalid strokecolor argument") }
+    guard let convertedTitleStrokeWidth = Double(titleStrokeWidth.value) else { throw ScriptError.argumentError(message: "Invalid strokewidth argument") }
 
     print("⌚️ Processing")
 
     let designStyle = DesignStyle(
         ribbon: ribbon.value,
         title: title.value,
-        fillColor: fillColor,
-        strokeColor: strokeColor,
-        strokeWidth: strokeWidth,
-        font: titleFont.value,
-        titleSizeRatio: titleSizeRatio,
-        horizontalTitlePositionRatio: horizontalTitlePosition,
-        verticalTitlePositionRatio: verticalTitlePosition,
+        titleFillColor: convertedTitleFillColor,
+        titleStrokeColor: convertedTitleStrokeColor,
+        titleStrokeWidth: convertedTitleStrokeWidth,
+        titleFont: titleFont.value,
+        titleSizeRatio: convertedTitleSizeRatio,
+        horizontalTitlePositionRatio: convertedHorizontalTitlePosition,
+        verticalTitlePositionRatio: convertedVerticalTitlePosition,
         titleAlignment: titleAlignment.value
     )
     
-    let scriptSetup = ScriptSetup(appIcon: appIcon.value, appIconOriginal: appIconOriginal.value, scriptPath: basePath)
-    let appSetup = try getAppSetup(scriptSetup: scriptSetup)
+    // iPhone App Icon @2x
+    try generateIcon(
+        size: "60x60",
+        scale: "2x",
+        realSize: CGSize(width: 120, height: 120),
+        designStyle: designStyle,
+        scriptSetup: scriptSetup,
+        appSetup: appSetup
+    )
     
-    if iPhone.value {
-        try generateIcon(
-            size: "60x60",
-            scale: "2x",
-            realSize: CGSize(width: 120, height: 120),
-            designStyle: designStyle,
-            scriptSetup: scriptSetup,
-            appSetup: appSetup
-        )
-        
-        try generateIcon(
-            size: "60x60",
-            scale: "3x",
-            realSize: CGSize(width: 180, height: 180),
-            designStyle: designStyle,
-            scriptSetup: scriptSetup,
-            appSetup: appSetup
-        )
-    }
+    // iPhone App Icon @3x
+    try generateIcon(
+        size: "60x60",
+        scale: "3x",
+        realSize: CGSize(width: 180, height: 180),
+        designStyle: designStyle,
+        scriptSetup: scriptSetup,
+        appSetup: appSetup
+    )
 
-    if iPad.value {
-        try generateIcon(
-            size: "76x76",
-            scale: "1x",
-            realSize: CGSize(width: 76, height: 76),
-            designStyle: designStyle,
-            scriptSetup: scriptSetup,
-            appSetup: appSetup
-        )
-        
-        try generateIcon(
-            size: "76x76",
-            scale: "2x",
-            realSize: CGSize(width: 152, height: 152),
-            designStyle: designStyle,
-            scriptSetup: scriptSetup,
-            appSetup: appSetup
-        )
-    }
+    // iPad App Icon @2x
+    try generateIcon(
+        size: "76x76",
+        scale: "2x",
+        realSize: CGSize(width: 152, height: 152),
+        designStyle: designStyle,
+        scriptSetup: scriptSetup,
+        appSetup: appSetup
+    )
+    
+    // iPad App Icon @3x
+    try generateIcon(
+        size: "76x76",
+        scale: "3x",
+        realSize: CGSize(width: 228, height: 228),
+        designStyle: designStyle,
+        scriptSetup: scriptSetup,
+        appSetup: appSetup
+    )
 
     print("✅ Done")
 }
