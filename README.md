@@ -29,7 +29,7 @@ A simple tool that prepares app icon overlays. Overlays can include the ribbon w
 $ gem install cocoapods
 ```
 
-To integrate DeallocTests into your Xcode project using CocoaPods, specify it in your `Podfile`:
+To integrate VersionIcon into your Xcode project using CocoaPods, specify it in your `Podfile`:
 
 ```ruby
 pod 'VersionIcon', :git=>'https://github.com/DanielCech/VersionIcon.git', :tag => 'v1.0.0'
@@ -55,6 +55,44 @@ fi
 ```
 * If your projects contains different configuration names, you'll need to adjust the script.
 * Move this script phase above the Copy Bundle Resources phase.
+
+## Parameters
+* Full description of parameters is available when you run VersionIcon with `--help` parameter
+```
+let original = moderatorVersionIcon prepares iOS icon with ribbon, text and version info overlay
+
+Usage: versionIcon <params>
+  --appIcon <The name of app icon asset>:
+      The asset that is modified by script. Default = 'AppIcon'.
+  --appIconOriginal <The name of original app icon asset>:
+      This asset is used as backup of original icon. Default = 'AppIconOriginal'.
+  --ribbon <Icon ribbon color>:
+      Name of PNG file in Ribbons folder or absolute path to Ribbon image
+  --title <Icon ribbon title>:
+      Name of PNG file in Titles folder or absolute path to Title image
+  --fillColor <Title fill color>:
+      The fill color of version title in #xxxxxx hexa format. Default = '#FFFFFF'.
+  --strokeColor <Title stroke color>:
+      The stroke color of version title in #xxxxxx hexa format. Default = '#000000'.
+  --strokeWidth <Version Title Stroke Width>:
+      Version title stroke width related to icon width. Default = '0.03'.
+  --font <Version label font>:
+      Font used for version title. Default = 'Impact'.
+  --titleSize <Version Title Size Ratio>:
+      Version title size related to icon width. Default = '0.2'.
+  --horizontalTitlePosition <Version Title Size Ratio>:
+      Version title position related to icon width. Default = '0.5'.
+  --verticalTitlePosition <Version Title Size Ratio>:
+      Version title position related to icon width. Default = '0.2'.
+  --titleAlignment <Version Title Text Alignment>:
+      Possible values are left, center, right. Default = 'center'.
+  --resources <VersionIcon resources path>:
+      Path where Ribbons and Titles folders are located. It is not necessary to set when script is executed as a build phase in Xcode
+  --original:
+      Use original icon with no modifications (for production)
+  --help:
+      Shows this info summary
+```
 
 ## Contributing
 
