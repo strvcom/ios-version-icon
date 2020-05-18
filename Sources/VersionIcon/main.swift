@@ -193,7 +193,7 @@ func restoreIcon(
         let originalAppIconFileName = appSetup.originalAppIconContents.imageInfo(forSize: size, scale: scale)?.filename,
         let originalAppIconImageFile = appSetup.originalAppIconFolder.findFirstFile(name: originalAppIconFileName)
     else {
-        throw ScriptError.fileNotFound(message: "Original icon with \(size):\(scale) not found in \(appSetup.originalAppIconFolder.path) folder")
+        return
     }
     
     guard
@@ -261,8 +261,15 @@ let resourcesPath = moderator.add(Argument<String?>
 
 let original = moderator.add(.option("original", description: "Use original icon with no modifications (for production)"))
 
+let help = moderator.add(.option("help", description: "Shows this info summary"))
+
 do {
     try moderator.parse()
+    
+    if help.value {
+        print(moderator.usagetext)
+        exit(0)
+    }
 
     guard let basePath = resourcesPath.value ?? main.env["PODS_ROOT"]?.appendingPathComponent(path: "VersionIcon/Bin") else {
         throw ScriptError.argumentError(message: "You must specify the script path using --scriptPath parameter")
