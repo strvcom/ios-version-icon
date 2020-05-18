@@ -8,7 +8,7 @@
     <img src="https://i.ibb.co/4Zgprnc/AppIcon.png" width="180" max-width="180" alt="Marathon" />
 </p>
 
-A simple tool that prepares app icon overlays. Overlays can include the ribbon with app version (Dev, Staging, Production, MVP...) and/or version number. The VersionIcon tool is distributed in binary form, so it is independent on your project setup.
+A simple tool that prepares app icon overlays. Overlays can include the ribbon with app version (Dev, Staging, Production, MVP...) and/or version number. The icon overlays can be customized many ways. You can also use your own graphic resources. The VersionIcon tool is distributed in binary form, so it is independent on your project setup.
 
 - [Requirements](#requirements)
 - [Installation](#installation)
@@ -17,14 +17,11 @@ A simple tool that prepares app icon overlays. Overlays can include the ribbon w
 
 ## Requirements
 
-- iOS 8.0+ / Mac OS X 10.10+ / tvOS 9.0+ / watchOS 2.0+
 - Xcode 10.0+
 
 ## Installation
 
-### Dependency Managers
-<details>
-  <summary><strong>CocoaPods</strong></summary>
+### Cocoapods
 
 [CocoaPods](http://cocoapods.org) is a dependency manager for Cocoa projects. You can install it with the following command:
 
@@ -44,10 +41,9 @@ Then, run the following command:
 $ pod install
 ```
 
-</details>
-
 ## Usage
 
+* Make a duplicate of your app icon resource in asset catalog - let's have for example AppIcon and AppIconOriginal. The copy is used as a backup. Production builds typically have no icon overlays. 
 * Create a new Run Script Phase in Build Settings > Build Phases in your app
 * Use this shell script:
 ```shell
