@@ -16,12 +16,13 @@ struct DesignStyle {
     var horizontalTitlePositionRatio: Double
     var verticalTitlePositionRatio: Double
     var titleAlignment: String
+    var versionStyle: String
 }
 
 struct ScriptSetup {
     var appIcon: String
     var appIconOriginal: String
-    var scriptPath: String
+    var resourcesPath: String
 }
 
 struct AppSetup {
@@ -115,10 +116,22 @@ func iconMetadata(iconFolder: Folder) throws -> IconMetadata {
     fatalError()
 }
 
-func getVersionText(appSetup: AppSetup) -> String {
+func getVersionText(appSetup: AppSetup, designStyle: DesignStyle) -> String {
     let versionNumberResult = run("/usr/libexec/PlistBuddy", "-c", "Print CFBundleShortVersionString", appSetup.projectDir.appendingPathComponent(path: appSetup.infoPlistFile))
     let buildNumberResult = run("/usr/libexec/PlistBuddy", "-c", "Print CFBundleVersion", appSetup.projectDir.appendingPathComponent(path: appSetup.infoPlistFile))
-    return "\(versionNumberResult.stdout) - \(buildNumberResult.stdout)"
+    
+    switch designStyle.versionStyle {
+    case "dash":
+        return "\(versionNumberResult.stdout) - \(buildNumberResult.stdout)"
+    case "parenthesis":
+        return "\(versionNumberResult.stdout)(\(buildNumberResult.stdout))"
+    case "versionOnly":
+        return "\(versionNumberResult.stdout)"
+    case "buildOnly":
+        return "\(buildNumberResult.stdout)"
+    default:
+        return ""
+    }
 }
 
 func resizeImage(fileName: String?, size: CGSize) -> NSImage? {
@@ -144,7 +157,7 @@ func generateIcon(
         let appIconFile = appSetup.appIconFolder.findFirstFile(name: appIconFileName)
     else { return }
     
-    let version = getVersionText(appSetup: appSetup)
+    let version = getVersionText(appSetup: appSetup, designStyle: designStyle)
 
     let newSize = CGSize(width: realSize.width / 2, height: realSize.height / 2)
 
@@ -254,10 +267,13 @@ let verticalTitlePositionRatio = moderator.add(Argument<String?>
 let titleAlignment = moderator.add(Argument<String?>
     .optionWithValue("titleAlignment", name: "Version Title Text Alignment", description: "Possible values are left, center, right.").default("center"))
 
+let versionStyle = moderator.add(Argument<String?>
+    .optionWithValue("versionStyle", name: "The format of version label", description: "Possible values are dash, parenthesis, versionOnly, buildOnly.").default("dash"))
+
 // AppSetup elements
 
 let resourcesPath = moderator.add(Argument<String?>
-    .optionWithValue("resources", name: "VersionIcon resources path", description: "Path where Ribbons and Titles folders are located. It is not necessary to set when script is executed as a build phase in Xcode"))
+    .optionWithValue("resources", name: "VersionIcon resources path", description: "Default path where Ribbons and Titles folders are located. It is not necessary to set when script is executed as a build phase in Xcode"))
 
 let original = moderator.add(.option("original", description: "Use original icon with no modifications (for production)"))
 
@@ -271,11 +287,11 @@ do {
         exit(0)
     }
 
-    guard let basePath = resourcesPath.value ?? main.env["PODS_ROOT"]?.appendingPathComponent(path: "VersionIcon/Bin") else {
-        throw ScriptError.argumentError(message: "You must specify the script path using --scriptPath parameter")
+    guard let resourcesPath = resourcesPath.value ?? main.env["PODS_ROOT"]?.appendingPathComponent(path: "VersionIcon/Bin") else {
+        throw ScriptError.argumentError(message: "You must specify the resources path using --resourcesPath parameter")
     }
     
-    let scriptSetup = ScriptSetup(appIcon: appIcon.value, appIconOriginal: appIconOriginal.value, scriptPath: basePath)
+    let scriptSetup = ScriptSetup(appIcon: appIcon.value, appIconOriginal: appIconOriginal.value, resourcesPath: resourcesPath)
     let appSetup = try getAppSetup(scriptSetup: scriptSetup)
 
     guard !original.value else {
@@ -314,17 +330,18 @@ do {
     }
 
     if let unwrappedRibbon = ribbon.value, unwrappedRibbon.lastPathComponent == unwrappedRibbon {
-        ribbon.value = basePath.appendingPathComponent(path: "Ribbons/\(unwrappedRibbon)")
+        ribbon.value = resourcesPath.appendingPathComponent(path: "Ribbons/\(unwrappedRibbon)")
     }
 
     if let unwrappedTitle = title.value, unwrappedTitle.lastPathComponent == unwrappedTitle {
-        title.value = basePath.appendingPathComponent(path: "Titles/\(unwrappedTitle)")
+        title.value = resourcesPath.appendingPathComponent(path: "Titles/\(unwrappedTitle)")
     }
 
     guard let convertedTitleSizeRatio = Double(titleSizeRatio.value) else { throw ScriptError.argumentError(message: "Invalid titlesize argument") }
     guard let convertedHorizontalTitlePosition = Double(horizontalTitlePositionRatio.value) else { throw ScriptError.argumentError(message: "Invalid horizontalTitlePosition argument") }
     guard let convertedVerticalTitlePosition = Double(verticalTitlePositionRatio.value) else { throw ScriptError.argumentError(message: "Invalid verticalTitlePosition argument") }
     guard titleAlignment.value == "left" || titleAlignment.value == "center" || titleAlignment.value == "right" else { throw ScriptError.argumentError(message: "Invalid titleAlignment argument") }
+    guard versionStyle.value == "dash" || titleAlignment.value == "parenthesis" || titleAlignment.value == "versionOnly" || titleAlignment.value == "buildOnly" else { throw ScriptError.argumentError(message: "Invalid versionStyle argument") }
     guard let convertedTitleFillColor = NSColor(hexString: titleFillColor.value) else { throw ScriptError.argumentError(message: "Invalid fillcolor argument") }
     guard let convertedTitleStrokeColor = NSColor(hexString: titleStrokeColor.value) else { throw ScriptError.argumentError(message: "Invalid strokecolor argument") }
     guard let convertedTitleStrokeWidth = Double(titleStrokeWidth.value) else { throw ScriptError.argumentError(message: "Invalid strokewidth argument") }
@@ -341,7 +358,8 @@ do {
         titleSizeRatio: convertedTitleSizeRatio,
         horizontalTitlePositionRatio: convertedHorizontalTitlePosition,
         verticalTitlePositionRatio: convertedVerticalTitlePosition,
-        titleAlignment: titleAlignment.value
+        titleAlignment: titleAlignment.value,
+        versionStyle: versionStyle.value
     )
     
     // iPhone App Icon @2x
