@@ -8,7 +8,7 @@
     <img src="https://i.ibb.co/4Zgprnc/AppIcon.png" width="180" max-width="180" alt="Marathon" />
 </p>
 
-A simple tool that prepares app icon overlays. Overlays can include the ribbon with app version (_Dev_, _Staging_, _Production_, _MVP_...) and/or version number. The icon overlays can be customized many ways. You can also use your own graphic resources. The VersionIcon tool is distributed in binary form, so it is independent on your project setup.
+A simple tool that can add and icon overlay with app version to your iOS app icon. Overlays can include the ribbon with app version (_Dev_, _Staging_, _Production_, _MVP_...) and/or version number. The icon overlays can be customized many ways. You can also use your own graphic resources. The VersionIcon tool is distributed in binary form, so it is independent on your project setup.
 
 - [Requirements](#requirements)
 - [Installation](#installation)
@@ -55,6 +55,7 @@ fi
 ```
 * If your projects contains different configuration names, you'll need to adjust the script.
 * Move this script phase above the Copy Bundle Resources phase.
+* If you need to use your own ribbon or title asset, you can specify full path to image file
 
 ## Parameters
 * Full description of parameters is available when you run VersionIcon with `--help` parameter
