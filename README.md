@@ -59,7 +59,7 @@ fi
 ## Parameters
 * Full description of parameters is available when you run VersionIcon with `--help` parameter
 ```
-let original = moderatorVersionIcon prepares iOS icon with ribbon, text and version info overlay
+VersionIcon prepares iOS icon with ribbon, text and version info overlay
 
 Usage: versionIcon <params>
   --appIcon <The name of app icon asset>:
@@ -86,8 +86,10 @@ Usage: versionIcon <params>
       Version title position related to icon width. Default = '0.2'.
   --titleAlignment <Version Title Text Alignment>:
       Possible values are left, center, right. Default = 'center'.
+  --versionStyle <The format of version label>:
+      Possible values are dash, parenthesis, versionOnly, buildOnly. Default = 'dash'.
   --resources <VersionIcon resources path>:
-      Path where Ribbons and Titles folders are located. It is not necessary to set when script is executed as a build phase in Xcode
+      Default path where Ribbons and Titles folders are located. It is not necessary to set when script is executed as a build phase in Xcode
   --original:
       Use original icon with no modifications (for production)
   --help:
