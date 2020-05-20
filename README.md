@@ -32,7 +32,7 @@ $ gem install cocoapods
 To integrate VersionIcon into your Xcode project using CocoaPods, specify it in your `Podfile`:
 
 ```ruby
-pod 'VersionIcon', :git=>'https://github.com/DanielCech/VersionIcon.git', :tag => 'v1.0.0'
+pod 'VersionIcon', '~> 1.0.1'
 ```
 
 Then, run the following command:
