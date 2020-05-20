@@ -135,8 +135,8 @@ func getVersionText(appSetup: AppSetup, designStyle: DesignStyle) -> String {
 }
 
 func resizeImage(fileName: String?, size: CGSize) -> NSImage? {
-    let ribbonImage: NSImage? = fileName.map { NSImage(contentsOfFile: $0) } ?? nil
-    return ribbonImage.map { try? $0.copy(size: size) } ?? nil
+    let image: NSImage? = fileName.map { NSImage(contentsOfFile: $0) } ?? nil
+    return image.map { try? $0.copy(size: size) } ?? nil
 }
 
 func generateIcon(
