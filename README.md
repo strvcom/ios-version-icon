@@ -50,7 +50,7 @@ $ pod install
 if [ "${CONFIGURATION}" = "Release" ]; then
     "Pods/VersionIcon/Bin/VersionIcon" --resources "Pods/VersionIcon/Bin" --original
 else
-    "Pods/VersionIcon/Bin/VersionIcon" --ribbon Blue.png --title Devel.png --resources "Pods/VersionIcon/Bin" --strokeWidth 0.07
+    "Pods/VersionIcon/Bin/VersionIcon"  --ribbon Blue-TopRight.png --title Devel-TopRight.png --resources "Pods/VersionIcon/Bin" --strokeWidth 0.07
 fi
 ```
 * If your projects contains different configuration names, you'll need to adjust the script.
