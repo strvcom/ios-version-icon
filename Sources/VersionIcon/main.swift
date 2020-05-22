@@ -75,7 +75,7 @@ func getAppSetup(scriptSetup: ScriptSetup) throws -> AppSetup {
     // For debugging purpuses
 //    let sourceRootPath = "/Users/danielcech/Documents/[Development]/[Projects]/RoboticArmApp"
 //    let projectDir = "/Users/danielcech/Documents/[Development]/[Projects]/RoboticArmApp"
-//    let infoPlistFile = "Arm/Info.plist"
+//    let infoPlistFile = "/Users/danielcech/Documents/[Development]/[Projects]/harbor-iOS/Harbor/Application/Info.plist"
 
 
     print("  sourceRootPath: \(sourceRootPath)")
@@ -117,18 +117,28 @@ func iconMetadata(iconFolder: Folder) throws -> IconMetadata {
 }
 
 func getVersionText(appSetup: AppSetup, designStyle: DesignStyle) -> String {
-    let versionNumberResult = run("/usr/libexec/PlistBuddy", "-c", "Print CFBundleShortVersionString", appSetup.projectDir.appendingPathComponent(path: appSetup.infoPlistFile))
-    let buildNumberResult = run("/usr/libexec/PlistBuddy", "-c", "Print CFBundleVersion", appSetup.projectDir.appendingPathComponent(path: appSetup.infoPlistFile))
+    let versionNumberResult = run("/usr/libexec/PlistBuddy", "-c", "Print CFBundleShortVersionString", appSetup.infoPlistFile)
+    let buildNumberResult = run("/usr/libexec/PlistBuddy", "-c", "Print CFBundleVersion", appSetup.infoPlistFile)
+    
+    var versionNumber = versionNumberResult.stdout
+    if versionNumber == "$(MARKETING_VERSION)" {
+        versionNumber = main.env["MARKETING_VERSION"] ?? ""
+    }
+    
+    var buildNumber = buildNumberResult.stdout
+    if buildNumber == "$(CURRENT_PROJECT_VERSION)" {
+        buildNumber = main.env["CURRENT_PROJECT_VERSION"] ?? ""
+    }
     
     switch designStyle.versionStyle {
     case "dash":
-        return "\(versionNumberResult.stdout) - \(buildNumberResult.stdout)"
+        return "\(versionNumber) - \(buildNumber)"
     case "parenthesis":
-        return "\(versionNumberResult.stdout)(\(buildNumberResult.stdout))"
+        return "\(versionNumber)(\(buildNumber))"
     case "versionOnly":
-        return "\(versionNumberResult.stdout)"
+        return "\(versionNumber)"
     case "buildOnly":
-        return "\(buildNumberResult.stdout)"
+        return "\(buildNumber)"
     default:
         return ""
     }
