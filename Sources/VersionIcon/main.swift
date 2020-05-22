@@ -120,11 +120,15 @@ func getVersionText(appSetup: AppSetup, designStyle: DesignStyle) -> String {
     let versionNumberResult = run("/usr/libexec/PlistBuddy", "-c", "Print CFBundleShortVersionString", appSetup.infoPlistFile)
     let buildNumberResult = run("/usr/libexec/PlistBuddy", "-c", "Print CFBundleVersion", appSetup.infoPlistFile)
     
+    // For debugging purpuses
+//    var versionNumber = "1.0"
+//    var buildNumber = "4"
+    
     var versionNumber = versionNumberResult.stdout
     if versionNumber == "$(MARKETING_VERSION)" {
         versionNumber = main.env["MARKETING_VERSION"] ?? ""
     }
-    
+
     var buildNumber = buildNumberResult.stdout
     if buildNumber == "$(CURRENT_PROJECT_VERSION)" {
         buildNumber = main.env["CURRENT_PROJECT_VERSION"] ?? ""
@@ -266,7 +270,7 @@ let titleFont = moderator.add(Argument<String?>
     .optionWithValue("font", name: "Version label font", description: "Font used for version title.").default("Impact"))
 
 let titleSizeRatio = moderator.add(Argument<String?>
-    .optionWithValue("titleSize", name: "Version Title Size Ratio", description: "Version title size related to icon width.").default("0.2"))
+    .optionWithValue("titleSize", name: "Version Title Size Ratio", description: "Version title size related to icon width.").default("0.25"))
 
 let horizontalTitlePositionRatio = moderator.add(Argument<String?>
     .optionWithValue("horizontalTitlePosition", name: "Version Title Size Ratio", description: "Version title position related to icon width.").default("0.5"))
