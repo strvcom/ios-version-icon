@@ -73,8 +73,8 @@ func getAppSetup(scriptSetup: ScriptSetup) throws -> AppSetup {
     }
     
     // For debugging purpuses
-//    let sourceRootPath = "/Users/danielcech/Documents/[Development]/[Projects]/RoboticArmApp"
-//    let projectDir = "/Users/danielcech/Documents/[Development]/[Projects]/RoboticArmApp"
+//    let sourceRootPath = "/Users/danielcech/Documents/[Development]/[Projects]/harbor-iOS"
+//    let projectDir = "/Users/danielcech/Documents/[Development]/[Projects]/harbor-iOS"
 //    let infoPlistFile = "/Users/danielcech/Documents/[Development]/[Projects]/harbor-iOS/Harbor/Application/Info.plist"
 
 
