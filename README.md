@@ -43,7 +43,7 @@ $ pod install
 
 ## Usage
 
-* Make a duplicate of your app icon resource in asset catalog - let's have for example _AppIcon_ and _AppIconOriginal_. The copy is used as a backup. Production builds typically have no icon overlays. 
+* Make a duplicate of your app icon resource in asset catalog - let's have for example _AppIcon_ and _AppIconOriginal_. The copy is used as a backup. Production builds typically have no icon overlays. (if your project contains icon resource with other than this default name, you need to specify it using `--appIcon` and/or `--appIconOriginal` parameter.
 * Create a new Run Script Phase in Build Settings > Build Phases in your app
 * Use this shell script:
 ```shell
@@ -58,44 +58,50 @@ fi
 * If you need to use your own ribbon or title asset, you can specify full path to image file
 
 ## Parameters
-* Full description of parameters is available when you run VersionIcon with `--help` parameter
-```
-VersionIcon prepares iOS icon with ribbon, text and version info overlay
+#### Ribbon Style
+* `--ribbon <Icon ribbon>`
+    * Icon ribbon. The folder Ribbons contains variety of ribbons .png files with different colors and positions. You can also specify the absolute path to your custom .png.
+    
+* `--title <Icon ribbon title>`
+    * The title on ribbon. You can choose from a several predefined titles in different positions in Titles folder. Or you can provide absolute path to your custom ribbon title image. (Ribbon titles are images with transparency, custom text is not supported yet)
 
-Usage: versionIcon <params>
-  --appIcon <The name of app icon asset>:
-      The asset that is modified by script. Default = 'AppIcon'.
-  --appIconOriginal <The name of original app icon asset>:
-      This asset is used as backup of original icon. Default = 'AppIconOriginal'.
-  --ribbon <Icon ribbon color>:
-      Name of PNG file in Ribbons folder or absolute path to Ribbon image
-  --title <Icon ribbon title>:
-      Name of PNG file in Titles folder or absolute path to Title image
-  --fillColor <Title fill color>:
-      The fill color of version title in #xxxxxx hexa format. Default = '#FFFFFF'.
-  --strokeColor <Title stroke color>:
-      The stroke color of version title in #xxxxxx hexa format. Default = '#000000'.
-  --strokeWidth <Version Title Stroke Width>:
-      Version title stroke width related to icon width. Default = '0.03'.
-  --font <Version label font>:
-      Font used for version title. Default = 'Impact'.
-  --titleSize <Version Title Size Ratio>:
-      Version title size related to icon width. Default = '0.2'.
-  --horizontalTitlePosition <Version Title Size Ratio>:
-      Version title position related to icon width. Default = '0.5'.
-  --verticalTitlePosition <Version Title Size Ratio>:
-      Version title position related to icon width. Default = '0.2'.
-  --titleAlignment <Version Title Text Alignment>:
-      Possible values are left, center, right. Default = 'center'.
-  --versionStyle <The format of version label>:
-      Possible values are dash, parenthesis, versionOnly, buildOnly. Default = 'dash'.
-  --resources <VersionIcon resources path>:
-      Default path where Ribbons and Titles folders are located. It is not necessary to set when script is executed as a build phase in Xcode
-  --original:
-      Use original icon with no modifications (for production)
-  --help:
-      Shows this info summary
-```
+#### Icon version Title
+* `--fillColor <Title fill color>`
+    * The fill color of version title in `#xxxxxx` hexa format. Default fill color is white ('#FFFFFF').
+    
+* `--strokeColor <Title stroke color>`
+    * The stroke color of version title in `#xxxxxx` hexa format. Default stroke color is black ('#000000').
+    
+* `--strokeWidth <Version Title Stroke Width>`
+    * The title stroke width related to icon width. Default value of stroke width is '0.03'.
+    
+* `--font <Version label font>`
+    * Font used for version title. Default font is 'Impact'.
+    
+* `--titleSize <Version Title Size Ratio>`
+    * Version title size related to icon width. Default title size is '0.2'.
+    
+* `--horizontalTitlePosition <Version Title Size Ratio>`
+    * Version title position related to icon width. Default = '0.5'.
+    
+* `--verticalTitlePosition <Version Title Size Ratio>`
+    * Version title position related to icon width. Default = '0.2'.
+      
+* `--titleAlignment <Version Title Text Alignment>`
+    * Possible values are left, center, right. Default = 'center'.
+    
+* `--versionStyle <The format of version label>`
+    * Possible values are _dash_, _parenthesis_, _versionOnly_, _buildOnly_. Default = 'dash'.
+
+#### Sript Setup
+* `--resources <VersionIcon resources path>`
+    * Default path where Ribbons and Titles folders are located. It is not necessary to set when script is executed as a build phase in Xcode
+    
+* `--original`
+    * If you need to use just original icon without any modifications, use this parameter. The production app typically has no icon overlay.
+    
+* `--help`
+    * Full description of parameters is available when you run VersionIcon with `--help` parameter
 
 ## Contributing
 
