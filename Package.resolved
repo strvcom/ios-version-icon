@@ -6,7 +6,7 @@
         "repositoryURL": "https://github.com/JohnSundell/Files.git",
         "state": {
           "branch": "master",
-          "revision": "22fe84797d499ffca911ccd896b34efaf06a50b9",
+          "revision": "9c9d5f65123742d0180b25d754b942bcc8010d4e",
           "version": null
         }
       },
@@ -24,7 +24,7 @@
         "repositoryURL": "https://github.com/DanielCech/ScriptToolkit.git",
         "state": {
           "branch": "master",
-          "revision": "a8da6df9c60a70e6d4d3d0114e03c6270b08755b",
+          "revision": "caf27512e6e037f1d68e42184adc9f1b8521f8e2",
           "version": null
         }
       },
@@ -33,7 +33,7 @@
         "repositoryURL": "https://github.com/kareman/SwiftShell.git",
         "state": {
           "branch": "master",
-          "revision": "fb7fc2c9ad8811caf324431a508fb79e3fb74f99",
+          "revision": "a6014fe94c3dbff0ad500e8da4f251a5d336530b",
           "version": null
         }
       }

@@ -83,6 +83,11 @@ func getAppSetup(scriptSetup: ScriptSetup) throws -> AppSetup {
             print("Missing environment variables")
             throw ScriptError.moreInfoNeeded(message: "Missing required environment variables: SRCROOT, PROJECT_DIR, INFOPLIST_FILE. Please run script from Xcode script build phase.")
     }
+    
+    // For debugging purpuses only.
+//    let sourceRootPath = "/Users/danielcech/Documents/[Development]/[Projects]/harbor-iOS"
+//    let projectDir = "/Users/danielcech/Documents/[Development]/[Projects]/harbor-iOS"
+//    let infoPlistFile = "Harbor/Application/Info.plist"
 
     print("  sourceRootPath: \(sourceRootPath)")
     print("  projectDir: \(projectDir)")
@@ -218,7 +223,9 @@ func generateIcon(
 
     let resizedIcon = try resultImage.copy(size: newSize)
     
-    try resizedIcon.savePNGRepresentationToURL(url: URL(fileURLWithPath: appIconFile.path))
+    
+    
+    try resizedIcon.savePNGRepresentationToURL(url: URL(fileURLWithPath: appIconFile.path), onlyChange: true)
 }
 
 /// Restore icon from original folder
