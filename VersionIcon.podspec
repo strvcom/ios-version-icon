@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
   s.name                      = 'VersionIcon'
   s.module_name               = 'VersionIcon'
-  s.version                   = '1.0.4'
+  s.version                   = '1.0.5'
   s.summary                   = 'Script written in Swift that prepares the iOS app icon overlay with ribbon, build type and version (build) info'
   s.homepage                  = 'https://github.com/DanielCech/VersionIcon'
   s.license                   = 'MIT'
