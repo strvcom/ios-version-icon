@@ -67,6 +67,8 @@ let help = moderator.add(.option("help", description: "Shows this info summary")
 do {
     try moderator.parse()
     
+    print("⌚️ Processing")
+    
     if help.value {
         print(moderator.usagetext)
         exit(0)
@@ -131,8 +133,6 @@ do {
     guard let convertedTitleFillColor = NSColor(hexString: titleFillColor.value) else { throw ScriptError.argumentError(message: "Invalid fillcolor argument") }
     guard let convertedTitleStrokeColor = NSColor(hexString: titleStrokeColor.value) else { throw ScriptError.argumentError(message: "Invalid strokecolor argument") }
     guard let convertedTitleStrokeWidth = Double(titleStrokeWidth.value) else { throw ScriptError.argumentError(message: "Invalid strokewidth argument") }
-
-    print("⌚️ Processing")
 
     let designStyle = DesignStyle(
         ribbon: ribbon.value,

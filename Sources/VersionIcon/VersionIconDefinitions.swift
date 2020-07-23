@@ -75,20 +75,21 @@ struct ImageInfo: Codable {
 
 /// Getting information about the app with modified icon
 func getAppSetup(scriptSetup: ScriptSetup) throws -> AppSetup {
-    guard
-        let sourceRootPath = main.env["SRCROOT"],
-        let projectDir = main.env["PROJECT_DIR"],
-        let infoPlistFile = main.env["INFOPLIST_FILE"]
-        else {
-            print("Missing environment variables")
-            throw ScriptError.moreInfoNeeded(message: "Missing required environment variables: SRCROOT, PROJECT_DIR, INFOPLIST_FILE. Please run script from Xcode script build phase.")
-    }
+    #if DEBUGGING
+        let sourceRootPath = "/Users/danielcech/Documents/[Development]/[Projects]/harbor-iOS"
+        let projectDir = "/Users/danielcech/Documents/[Development]/[Projects]/harbor-iOS"
+        let infoPlistFile = "Harbor/Application/Info.plist"
+    #else
+        guard
+            let sourceRootPath = main.env["SRCROOT"],
+            let projectDir = main.env["PROJECT_DIR"],
+            let infoPlistFile = main.env["INFOPLIST_FILE"]
+            else {
+                print("Missing environment variables")
+                throw ScriptError.moreInfoNeeded(message: "Missing required environment variables: SRCROOT, PROJECT_DIR, INFOPLIST_FILE. Please run script from Xcode script build phase.")
+        }
+    #endif
     
-    // For debugging purpuses only.
-//    let sourceRootPath = "/Users/danielcech/Documents/[Development]/[Projects]/harbor-iOS"
-//    let projectDir = "/Users/danielcech/Documents/[Development]/[Projects]/harbor-iOS"
-//    let infoPlistFile = "Harbor/Application/Info.plist"
-
     print("  sourceRootPath: \(sourceRootPath)")
     print("  projectDir: \(projectDir)")
     print("  infoPlistFile: \(infoPlistFile)")
@@ -130,6 +131,10 @@ func iconMetadata(iconFolder: Folder) throws -> IconMetadata {
 
 /// Get current version and build of the app in prefered format
 func getVersionText(appSetup: AppSetup, designStyle: DesignStyle) -> String {
+    #if DEBUGGING
+        return "1.0-18"
+    #endif
+    
     let versionNumberResult = run("/usr/libexec/PlistBuddy", "-c", "Print CFBundleShortVersionString", appSetup.infoPlistFile)
     let buildNumberResult = run("/usr/libexec/PlistBuddy", "-c", "Print CFBundleVersion", appSetup.infoPlistFile)
         
@@ -187,14 +192,16 @@ func generateIcon(
         let appIconFile = appSetup.appIconFolder.findFirstFile(name: appIconFileName)
     else { return }
     
+    print(appIconFileName.lastPathComponent)
+    
     let version = getVersionText(appSetup: appSetup, designStyle: designStyle)
 
     let newSize = CGSize(width: realSize.width / 2, height: realSize.height / 2)
 
-    print("  Resizing ribbon")
+    //  Resizing ribbon
     let resizedRibbonImage = resizeImage(fileName: designStyle.ribbon, size: newSize)
 
-    print("  Resizing title")
+    //  Resizing title
     let resizedTitleImage = resizeImage(fileName: designStyle.title, size: newSize)
 
     let iconImageData = try Data(contentsOf: URL(fileURLWithPath: originalAppIconFile.path))
@@ -208,7 +215,7 @@ func generateIcon(
         combinedImage = try combinedImage.combine(withImage: unwrappedResizedTitleImage)
     }
 
-    print("  Annotating")
+    //  Annotating
     let resultImage = try combinedImage.annotate(
         text: version,
         font: designStyle.titleFont,
