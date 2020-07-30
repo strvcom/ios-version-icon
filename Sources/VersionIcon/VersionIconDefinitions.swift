@@ -132,7 +132,7 @@ func iconMetadata(iconFolder: Folder) throws -> IconMetadata {
 /// Get current version and build of the app in prefered format
 func getVersionText(appSetup: AppSetup, designStyle: DesignStyle) -> String {
     #if DEBUGGING
-        return "1.0-18"
+        return "1.0 - 20"
     #endif
     
     let versionNumberResult = run("/usr/libexec/PlistBuddy", "-c", "Print CFBundleShortVersionString", appSetup.infoPlistFile)
