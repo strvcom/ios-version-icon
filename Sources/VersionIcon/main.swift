@@ -129,7 +129,7 @@ do {
     guard let convertedHorizontalTitlePosition = Double(horizontalTitlePositionRatio.value) else { throw ScriptError.argumentError(message: "Invalid horizontalTitlePosition argument") }
     guard let convertedVerticalTitlePosition = Double(verticalTitlePositionRatio.value) else { throw ScriptError.argumentError(message: "Invalid verticalTitlePosition argument") }
     guard titleAlignment.value == "left" || titleAlignment.value == "center" || titleAlignment.value == "right" else { throw ScriptError.argumentError(message: "Invalid titleAlignment argument") }
-    guard versionStyle.value == "dash" || titleAlignment.value == "parenthesis" || titleAlignment.value == "versionOnly" || titleAlignment.value == "buildOnly" else { throw ScriptError.argumentError(message: "Invalid versionStyle argument") }
+    guard versionStyle.value == "dash" || versionStyle.value == "parenthesis" || versionStyle.value == "versionOnly" || versionStyle.value == "buildOnly" else { throw ScriptError.argumentError(message: "Invalid versionStyle argument") }
     guard let convertedTitleFillColor = NSColor(hexString: titleFillColor.value) else { throw ScriptError.argumentError(message: "Invalid fillcolor argument") }
     guard let convertedTitleStrokeColor = NSColor(hexString: titleStrokeColor.value) else { throw ScriptError.argumentError(message: "Invalid strokecolor argument") }
     guard let convertedTitleStrokeWidth = Double(titleStrokeWidth.value) else { throw ScriptError.argumentError(message: "Invalid strokewidth argument") }
