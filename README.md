@@ -93,7 +93,7 @@ fi
 * `--versionStyle <The format of version label>`
     * Possible values are _dash_, _parenthesis_, _versionOnly_, _buildOnly_. Default = 'dash'.
 
-#### Sript Setup
+#### Script Setup
 * `--resources <VersionIcon resources path>`
     * Default path where Ribbons and Titles folders are located. It is not necessary to set when script is executed as a build phase in Xcode
     
