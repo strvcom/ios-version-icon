@@ -10,7 +10,7 @@ let package = Package(
     ],
     dependencies: [
       .package(url: "https://github.com/JohnSundell/Files.git", from: "4.1.1"),
-        .package(url: "https://github.com/kareman/Moderator.git", from: "0.5.1"),
+        .package(url: "https://github.com/DanielCech/Moderator.git", from: "0.5.1"),
         .package(url: "https://github.com/DanielCech/ScriptToolkit.git", .branch("master")),
         .package(url: "https://github.com/kareman/SwiftShell.git", from: "5.0.1"),
         .package(url: "https://github.com/kareman/FileSmith.git", from: "0.3.0"),
