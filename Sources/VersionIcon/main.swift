@@ -114,6 +114,14 @@ do {
             appSetup: appSetup
         )
         
+        // Universal iOS marketing icon
+        try restoreIcon(
+            size: "1024x1024",
+            scale: "1x",
+            scriptSetup: scriptSetup,
+            appSetup: appSetup
+        )
+        
         exit(0)
     }
 
@@ -183,6 +191,16 @@ do {
         size: "83.5x83.5",
         scale: "2x",
         realSize: CGSize(width: 167, height: 167),
+        designStyle: designStyle,
+        scriptSetup: scriptSetup,
+        appSetup: appSetup
+    )
+    
+    // Universal iOS marketing icon
+    try generateIcon(
+        size: "1024x1024",
+        scale: "1x",
+        realSize: CGSize(width: 1024, height: 1024),
         designStyle: designStyle,
         scriptSetup: scriptSetup,
         appSetup: appSetup
