@@ -54,7 +54,7 @@ struct IconMetadata: Codable {
     
     func imageInfo(forSize size: String, scale: String) -> ImageInfo? {
         for image in images {
-            if (image.size == size) && (image.scale == scale) {
+            if (image.size == size) && (image.scale ?? "1x" == scale) {
                 return image
             }
         }
