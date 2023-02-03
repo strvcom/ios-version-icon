@@ -204,8 +204,13 @@ func generateIcon(
     //  Resizing title
     let resizedTitleImage = resizeImage(fileName: designStyle.title, size: newSize)
 
-    let iconImageData = try Data(contentsOf: URL(fileURLWithPath: originalAppIconFile.path))
-    guard let iconImage = NSImage(data: iconImageData) else { throw ScriptError.generalError(message: "Invalid image file") }
+    guard
+        let iconImageData = try? Data(contentsOf: URL(fileURLWithPath: originalAppIconFile.path)),
+        let iconImage = NSImage(data: iconImageData)
+    else {
+        return
+        // throw ScriptError.generalError(message: "Invalid image file")
+    }
 
     var combinedImage = iconImage
     if let unwrappedResizedRibbonImage = resizedRibbonImage {
@@ -252,7 +257,8 @@ func restoreIcon(
     guard
         let appIconFileName = appSetup.appIconContents.imageInfo(forSize: size, scale: scale)?.filename
     else {
-        throw ScriptError.fileNotFound(message: "Target icon record with \(size):\(scale) not found in \(appSetup.appIconFolder.path) folder")
+        print("    Icon with size \(size):\(scale) not found")
+        return
     }
     
     let appIconFilePath = appSetup.appIconFolder.path.appendingPathComponent(path: appIconFileName)
