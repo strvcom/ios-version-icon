@@ -20,6 +20,15 @@
         }
       },
       {
+        "package": "Moderator",
+        "repositoryURL": "https://github.com/DanielCech/Moderator.git",
+        "state": {
+          "branch": "master",
+          "revision": "b9c7e870caba30204903cf768367b7a5dc4ae3fa",
+          "version": null
+        }
+      },
+      {
         "package": "ScriptToolkit",
         "repositoryURL": "https://github.com/DanielCech/ScriptToolkit.git",
         "state": {

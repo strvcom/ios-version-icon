@@ -54,7 +54,7 @@ struct IconMetadata: Codable {
     
     func imageInfo(forSize size: String, scale: String) -> ImageInfo? {
         for image in images {
-            if (image.size == size) && (image.scale == scale) {
+            if image.fits(size: size) && image.fits(scale: scale) {
                 return image
             }
         }
@@ -67,7 +67,17 @@ struct ImageInfo: Codable {
     var size: String
     var idiom: String
     var filename: String?
-    var scale: String
+    var scale: String?
+    
+    static let singleScale = "1x"
+    
+    func fits(size: String) -> Bool {
+        self.size == size
+    }
+    
+    func fits(scale: String?) -> Bool {
+        self.scale ?? ImageInfo.singleScale == scale
+    }
 }
 
 
@@ -76,9 +86,9 @@ struct ImageInfo: Codable {
 /// Getting information about the app with modified icon
 func getAppSetup(scriptSetup: ScriptSetup) throws -> AppSetup {
     #if DEBUGGING
-        let sourceRootPath = "/Users/danielcech/Documents/[Development]/[Projects]/harbor-iOS"
-        let projectDir = "/Users/danielcech/Documents/[Development]/[Projects]/harbor-iOS"
-        let infoPlistFile = "Harbor/Application/Info.plist"
+        let sourceRootPath = "/Users/danielcech/Documents/ios-project-template"
+        let projectDir = "/Users/danielcech/Documents/ios-project-template"
+        let infoPlistFile = "Example/Application/Info.plist"
     #else
         guard
             let sourceRootPath = main.env["SRCROOT"],
@@ -124,9 +134,8 @@ func iconMetadata(iconFolder: Folder) throws -> IconMetadata {
         return iconMetadata
     }
     catch {
-        print(error)
+        throw ScriptError.generalError(message: String(describing: error))
     }
-    fatalError()
 }
 
 /// Get current version and build of the app in prefered format
@@ -204,8 +213,12 @@ func generateIcon(
     //  Resizing title
     let resizedTitleImage = resizeImage(fileName: designStyle.title, size: newSize)
 
-    let iconImageData = try Data(contentsOf: URL(fileURLWithPath: originalAppIconFile.path))
-    guard let iconImage = NSImage(data: iconImageData) else { throw ScriptError.generalError(message: "Invalid image file") }
+    guard
+        let iconImageData = try? Data(contentsOf: URL(fileURLWithPath: originalAppIconFile.path)),
+        let iconImage = NSImage(data: iconImageData)
+    else {
+        return
+    }
 
     var combinedImage = iconImage
     if let unwrappedResizedRibbonImage = resizedRibbonImage {
@@ -252,7 +265,8 @@ func restoreIcon(
     guard
         let appIconFileName = appSetup.appIconContents.imageInfo(forSize: size, scale: scale)?.filename
     else {
-        throw ScriptError.fileNotFound(message: "Target icon record with \(size):\(scale) not found in \(appSetup.appIconFolder.path) folder")
+        print("    Icon with size \(size):\(scale) not found")
+        return
     }
     
     let appIconFilePath = appSetup.appIconFolder.path.appendingPathComponent(path: appIconFileName)
