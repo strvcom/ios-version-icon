@@ -20,7 +20,13 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages which this package depends on.
         .target(
             name: "VersionIcon",
-            dependencies: ["Files", "FileSmith", "SwiftShell", "ScriptToolkit", "Moderator"]),
+            dependencies: ["Files", "FileSmith", "SwiftShell", "ScriptToolkit", "Moderator"],
+            swiftSettings:
+                [
+                    // Macro definition - uncomment only when debugging
+                    // .define("DEBUGGING")
+                ]
+        ),
         .testTarget(
             name: "VersionIconTests",
             dependencies: ["VersionIcon"]),
