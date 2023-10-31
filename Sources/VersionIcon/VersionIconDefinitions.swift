@@ -205,7 +205,12 @@ func generateIcon(
     
     let version = getVersionText(appSetup: appSetup, designStyle: designStyle)
 
-    let newSize = CGSize(width: realSize.width / 2, height: realSize.height / 2)
+    let scaleFactor = NSScreen.main?.backingScaleFactor ?? 2
+
+    let newSize = CGSize(
+        width: realSize.width / scaleFactor,
+        height: realSize.height / scaleFactor
+    )
 
     //  Resizing ribbon
     let resizedRibbonImage = resizeImage(fileName: designStyle.ribbon, size: newSize)
