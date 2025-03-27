@@ -2,7 +2,7 @@
 [![License](https://img.shields.io/cocoapods/l/VersionIcon.svg?style=flat)](https://cocoapods.org/pods/VersionIcon)
 
 <p align="center">
-    <img src="https://i.ibb.co/4Zgprnc/AppIcon.png" width="180" max-width="180" alt="VersionIcon" />
+    <img src="https://i.ibb.co/pBJbxxsH/App-Icon60x60-2x.png" width="180" max-width="180" alt="VersionIcon" />
 </p>
 
 # VersionIcon
