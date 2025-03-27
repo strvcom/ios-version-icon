@@ -102,6 +102,15 @@ fi
 * `--help`
     * Full description of parameters is available when you run VersionIcon with `--help` parameter
 
+## Debugging
+
+If you want to modify the behavior and debug VersionIcon in context of your project, you need a special setup of the scheme. The screenshot shows the commandline arguments passed on launch. These parameters can be copied from the existing VersionIcon call build phase. And three environment variables that are necessary to propagate. The values of these environment are visible in the Xcode's Report navigator. All checkboxes should be on.
+
+<p align="center">
+    <img src="https://i.ibb.co/5XC6fT9p/Scheme-Setup.png" width="936" max-width="534" alt="Scheme" />
+</p>
+
+
 ## Contributing
 
 Issues and pull requests are welcome!
