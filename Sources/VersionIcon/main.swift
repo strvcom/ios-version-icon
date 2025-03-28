@@ -1,12 +1,12 @@
-import Foundation
 import AppKit
 import Files
-import SwiftShell
+import Foundation
 import Moderator
 import ScriptToolkit
-
+import SwiftShell
 
 // ========================================================================================================================================
+
 // MARK: - Main script
 
 let moderator = Moderator(description: "VersionIcon prepares iOS icon with ribbon, text and version info overlay")
@@ -18,7 +18,7 @@ let appIcon = moderator.add(Argument<String?>
     .optionWithValue("appIcon", name: "The name of app icon asset", description: "The asset that is modified by script.").default("AppIcon"))
 
 let appIconOriginal = moderator.add(Argument<String?>
-.optionWithValue("appIconOriginal", name: "The name of original app icon asset", description: "This asset is used as backup of original icon.").default("AppIconOriginal"))
+    .optionWithValue("appIconOriginal", name: "The name of original app icon asset", description: "This asset is used as backup of original icon.").default("AppIconOriginal"))
 
 // DesignStyle elements
 
@@ -66,9 +66,9 @@ let help = moderator.add(.option("help", description: "Shows this info summary")
 
 do {
     try moderator.parse()
-    
+
     print("⌚️ Processing")
-    
+
     if help.value {
         print(moderator.usagetext)
         exit(0)
@@ -77,7 +77,7 @@ do {
     guard let resourcesPath = resourcesPath.value ?? main.env["PODS_ROOT"]?.appendingPathComponent(path: "VersionIcon/Bin") else {
         throw ScriptError.argumentError(message: "You must specify the resources path using --resourcesPath parameter")
     }
-    
+
     let scriptSetup = ScriptSetup(appIcon: appIcon.value, appIconOriginal: appIconOriginal.value, resourcesPath: resourcesPath)
     let appSetup = try getAppSetup(scriptSetup: scriptSetup)
 
@@ -89,7 +89,7 @@ do {
             scriptSetup: scriptSetup,
             appSetup: appSetup
         )
-        
+
         // iPhone App Icon @3x
         try restoreIcon(
             size: "60x60",
@@ -105,7 +105,7 @@ do {
             scriptSetup: scriptSetup,
             appSetup: appSetup
         )
-        
+
         // iPad Pro App Icon @2x
         try restoreIcon(
             size: "83.5x83.5",
@@ -113,7 +113,7 @@ do {
             scriptSetup: scriptSetup,
             appSetup: appSetup
         )
-        
+
         // Universal iOS marketing icon
         try restoreIcon(
             size: "1024x1024",
@@ -121,7 +121,7 @@ do {
             scriptSetup: scriptSetup,
             appSetup: appSetup
         )
-        
+
         exit(0)
     }
 
@@ -155,7 +155,7 @@ do {
         titleAlignment: titleAlignment.value,
         versionStyle: versionStyle.value
     )
-    
+
     // iPhone App Icon @2x
     try generateIcon(
         size: "60x60",
@@ -165,7 +165,7 @@ do {
         scriptSetup: scriptSetup,
         appSetup: appSetup
     )
-    
+
     // iPhone App Icon @3x
     try generateIcon(
         size: "60x60",
@@ -185,7 +185,7 @@ do {
         scriptSetup: scriptSetup,
         appSetup: appSetup
     )
-    
+
     // iPad Pro App Icon @2x
     try generateIcon(
         size: "83.5x83.5",
@@ -195,7 +195,7 @@ do {
         scriptSetup: scriptSetup,
         appSetup: appSetup
     )
-    
+
     // Universal iOS marketing icon
     try generateIcon(
         size: "1024x1024",
@@ -207,8 +207,7 @@ do {
     )
 
     print("✅ Done")
-}
-catch {
+} catch {
     if let printableError = error as? PrintableError { print(printableError.errorDescription) }
     else {
         print(error.localizedDescription)
