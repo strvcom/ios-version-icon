@@ -39,6 +39,7 @@ playground.xcworkspace
 # Package.pins
 # Package.resolved
 .build/
+.swiftpm
 
 # CocoaPods
 #
@@ -77,17 +78,4 @@ Gemfile.lock
 
 .DS_Store
 
-# Tuist
-#
-# Tuist generates the .xcodeproj and .xcworkspace files from definition files so there is no need to store them in the git repo.
-**/*.xcodeproj
-**/*.xcworkspace
-
-# Tuist managed dependencies
-Tuist/Dependencies/*
-
-# Tuist derived files
-Derived/
-# VersionIcon
-
-App/TechnoAlpin/Application/Resources/Assets.xcassets/AppIcon.appiconset/*
+/*.xcodeproj
