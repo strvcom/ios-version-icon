@@ -2,12 +2,25 @@ import AppKit
 import Files
 import Foundation
 import Moderator
-import ScriptToolkit
 import SwiftShell
 
 // ========================================================================================================================================
 
 // MARK: - Main script
+
+struct IconVariant {
+    let size: String
+    let scale: String
+    let realSize: CGSize
+}
+
+let iconVariants = [
+    IconVariant(size: "60x60", scale: "2x", realSize: CGSize(width: 120, height: 120)),
+    IconVariant(size: "60x60", scale: "3x", realSize: CGSize(width: 180, height: 180)),
+    IconVariant(size: "76x76", scale: "2x", realSize: CGSize(width: 152, height: 152)),
+    IconVariant(size: "83.5x83.5", scale: "2x", realSize: CGSize(width: 167, height: 167)),
+    IconVariant(size: "1024x1024", scale: "1x", realSize: CGSize(width: 1024, height: 1024)),
+]
 
 let moderator = Moderator(description: "VersionIcon prepares iOS icon with ribbon, text and version info overlay")
 moderator.usageFormText = "versionIcon <params>"
@@ -75,52 +88,20 @@ do {
     }
 
     guard let resourcesPath = resourcesPath.value ?? main.env["PODS_ROOT"]?.appendingPathComponent(path: "VersionIcon/Bin") else {
-        throw ScriptError.argumentError(message: "You must specify the resources path using --resourcesPath parameter")
+        throw ScriptError.argumentError(message: "You must specify the resources path using --resources parameter")
     }
 
     let scriptSetup = ScriptSetup(appIcon: appIcon.value, appIconOriginal: appIconOriginal.value, resourcesPath: resourcesPath)
     let appSetup = try getAppSetup(scriptSetup: scriptSetup)
 
     guard !original.value else {
-        // iPhone App Icon @2x
-        try restoreIcon(
-            size: "60x60",
-            scale: "2x",
-            scriptSetup: scriptSetup,
-            appSetup: appSetup
-        )
-
-        // iPhone App Icon @3x
-        try restoreIcon(
-            size: "60x60",
-            scale: "3x",
-            scriptSetup: scriptSetup,
-            appSetup: appSetup
-        )
-
-        // iPad App Icon @2x
-        try restoreIcon(
-            size: "76x76",
-            scale: "2x",
-            scriptSetup: scriptSetup,
-            appSetup: appSetup
-        )
-
-        // iPad Pro App Icon @2x
-        try restoreIcon(
-            size: "83.5x83.5",
-            scale: "2x",
-            scriptSetup: scriptSetup,
-            appSetup: appSetup
-        )
-
-        // Universal iOS marketing icon
-        try restoreIcon(
-            size: "1024x1024",
-            scale: "1x",
-            scriptSetup: scriptSetup,
-            appSetup: appSetup
-        )
+        for variant in iconVariants {
+            try restoreIcon(
+                size: variant.size,
+                scale: variant.scale,
+                appSetup: appSetup
+            )
+        }
 
         exit(0)
     }
@@ -136,11 +117,15 @@ do {
     guard let convertedTitleSizeRatio = Double(titleSizeRatio.value) else { throw ScriptError.argumentError(message: "Invalid titlesize argument") }
     guard let convertedHorizontalTitlePosition = Double(horizontalTitlePositionRatio.value) else { throw ScriptError.argumentError(message: "Invalid horizontalTitlePosition argument") }
     guard let convertedVerticalTitlePosition = Double(verticalTitlePositionRatio.value) else { throw ScriptError.argumentError(message: "Invalid verticalTitlePosition argument") }
-    guard titleAlignment.value == "left" || titleAlignment.value == "center" || titleAlignment.value == "right" else { throw ScriptError.argumentError(message: "Invalid titleAlignment argument") }
-    guard versionStyle.value == "dash" || versionStyle.value == "parenthesis" || versionStyle.value == "versionOnly" || versionStyle.value == "buildOnly" else { throw ScriptError.argumentError(message: "Invalid versionStyle argument") }
+    guard let convertedTitleAlignment = TitleAlignment(rawValue: titleAlignment.value)
+    else { throw ScriptError.argumentError(message: "Invalid titleAlignment argument") }
+    guard let convertedVersionStyle = VersionStyle(rawValue: versionStyle.value)
+    else { throw ScriptError.argumentError(message: "Invalid versionStyle argument") }
     guard let convertedTitleFillColor = NSColor(hexString: titleFillColor.value) else { throw ScriptError.argumentError(message: "Invalid fillcolor argument") }
     guard let convertedTitleStrokeColor = NSColor(hexString: titleStrokeColor.value) else { throw ScriptError.argumentError(message: "Invalid strokecolor argument") }
     guard let convertedTitleStrokeWidth = Double(titleStrokeWidth.value) else { throw ScriptError.argumentError(message: "Invalid strokewidth argument") }
+    try validateImageResource(fileName: ribbon.value, kind: "ribbon")
+    try validateImageResource(fileName: title.value, kind: "title")
 
     let designStyle = DesignStyle(
         ribbon: ribbon.value,
@@ -152,59 +137,19 @@ do {
         titleSizeRatio: convertedTitleSizeRatio,
         horizontalTitlePositionRatio: convertedHorizontalTitlePosition,
         verticalTitlePositionRatio: convertedVerticalTitlePosition,
-        titleAlignment: titleAlignment.value,
-        versionStyle: versionStyle.value
+        titleAlignment: convertedTitleAlignment,
+        versionStyle: convertedVersionStyle
     )
 
-    // iPhone App Icon @2x
-    try generateIcon(
-        size: "60x60",
-        scale: "2x",
-        realSize: CGSize(width: 120, height: 120),
-        designStyle: designStyle,
-        scriptSetup: scriptSetup,
-        appSetup: appSetup
-    )
-
-    // iPhone App Icon @3x
-    try generateIcon(
-        size: "60x60",
-        scale: "3x",
-        realSize: CGSize(width: 180, height: 180),
-        designStyle: designStyle,
-        scriptSetup: scriptSetup,
-        appSetup: appSetup
-    )
-
-    // iPad App Icon @2x
-    try generateIcon(
-        size: "76x76",
-        scale: "2x",
-        realSize: CGSize(width: 152, height: 152),
-        designStyle: designStyle,
-        scriptSetup: scriptSetup,
-        appSetup: appSetup
-    )
-
-    // iPad Pro App Icon @2x
-    try generateIcon(
-        size: "83.5x83.5",
-        scale: "2x",
-        realSize: CGSize(width: 167, height: 167),
-        designStyle: designStyle,
-        scriptSetup: scriptSetup,
-        appSetup: appSetup
-    )
-
-    // Universal iOS marketing icon
-    try generateIcon(
-        size: "1024x1024",
-        scale: "1x",
-        realSize: CGSize(width: 1024, height: 1024),
-        designStyle: designStyle,
-        scriptSetup: scriptSetup,
-        appSetup: appSetup
-    )
+    for variant in iconVariants {
+        try generateIcon(
+            size: variant.size,
+            scale: variant.scale,
+            realSize: variant.realSize,
+            designStyle: designStyle,
+            appSetup: appSetup
+        )
+    }
 
     print("✅ Done")
 } catch {

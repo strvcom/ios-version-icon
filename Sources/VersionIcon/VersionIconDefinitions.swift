@@ -9,8 +9,20 @@ import AppKit
 import Files
 import Foundation
 import Moderator
-import ScriptToolkit
 import SwiftShell
+
+enum TitleAlignment: String {
+    case left
+    case center
+    case right
+}
+
+enum VersionStyle: String {
+    case dash
+    case parenthesis
+    case versionOnly
+    case buildOnly
+}
 
 /// Icon overlay design style description
 struct DesignStyle {
@@ -23,8 +35,8 @@ struct DesignStyle {
     var titleSizeRatio: Double
     var horizontalTitlePositionRatio: Double
     var verticalTitlePositionRatio: Double
-    var titleAlignment: String
-    var versionStyle: String
+    var titleAlignment: TitleAlignment
+    var versionStyle: VersionStyle
 }
 
 /// Information about script running context
@@ -81,6 +93,20 @@ struct ImageInfo: Codable {
 
 // MARK: - Helpers
 
+func validateImageResource(fileName: String?, kind: String) throws {
+    guard let path = fileName else {
+        return
+    }
+
+    guard FileManager.default.fileExists(atPath: path) else {
+        throw ScriptError.fileNotFound(message: "\(kind) image: \(path)")
+    }
+
+    guard NSImage(contentsOfFile: path) != nil else {
+        throw ScriptError.generalError(message: "Unable to load \(kind) image: \(path)")
+    }
+}
+
 /// Getting information about the app with modified icon
 func getAppSetup(scriptSetup: ScriptSetup) throws -> AppSetup {
     #if DEBUGGING
@@ -136,13 +162,21 @@ func iconMetadata(iconFolder: Folder) throws -> IconMetadata {
 }
 
 /// Get current version and build of the app in prefered format
-func getVersionText(appSetup: AppSetup, designStyle: DesignStyle) -> String {
+func getVersionText(appSetup: AppSetup, designStyle: DesignStyle) throws -> String {
     #if DEBUGGING
         return "1.0 - 20"
     #endif
 
     let versionNumberResult = run("/usr/libexec/PlistBuddy", "-c", "Print CFBundleShortVersionString", appSetup.infoPlistFile)
     let buildNumberResult = run("/usr/libexec/PlistBuddy", "-c", "Print CFBundleVersion", appSetup.infoPlistFile)
+
+    guard versionNumberResult.succeeded else {
+        throw ScriptError.generalError(message: "Unable to read CFBundleShortVersionString from \(appSetup.infoPlistFile): \(versionNumberResult.stderror)")
+    }
+
+    guard buildNumberResult.succeeded else {
+        throw ScriptError.generalError(message: "Unable to read CFBundleVersion from \(appSetup.infoPlistFile): \(buildNumberResult.stderror)")
+    }
 
     var versionNumber = versionNumberResult.stdout
     if versionNumber == "$(MARKETING_VERSION)" {
@@ -155,16 +189,14 @@ func getVersionText(appSetup: AppSetup, designStyle: DesignStyle) -> String {
     }
 
     switch designStyle.versionStyle {
-    case "dash":
+    case .dash:
         return "\(versionNumber) - \(buildNumber)"
-    case "parenthesis":
+    case .parenthesis:
         return "\(versionNumber)(\(buildNumber))"
-    case "versionOnly":
+    case .versionOnly:
         return "\(versionNumber)"
-    case "buildOnly":
+    case .buildOnly:
         return "\(buildNumber)"
-    default:
-        return ""
     }
 }
 
@@ -227,26 +259,29 @@ func generateIcon(
     scale: String,
     realSize: CGSize,
     designStyle: DesignStyle,
-    scriptSetup: ScriptSetup,
     appSetup: AppSetup
 ) throws {
-    guard
-        let originalAppIconFileName = appSetup.originalAppIconContents.imageInfo(forSize: size, scale: scale)?.filename,
-        let originalAppIconFile = appSetup.originalAppIconFolder.findFirstFile(name: originalAppIconFileName)
-    else {
-        return
+    guard let originalAppIconFileName = appSetup.originalAppIconContents.imageInfo(forSize: size, scale: scale)?.filename else {
+        throw ScriptError.fileNotFound(message: "Missing icon metadata for original icon \(size) @\(scale)")
     }
 
-    try restoreIcon(size: size, scale: scale, scriptSetup: scriptSetup, appSetup: appSetup)
+    guard let originalAppIconFile = appSetup.originalAppIconFolder.findFirstFile(name: originalAppIconFileName) else {
+        throw ScriptError.fileNotFound(message: "Original icon file \(originalAppIconFileName) for \(size) @\(scale)")
+    }
 
-    guard
-        let appIconFileName = appSetup.appIconContents.imageInfo(forSize: size, scale: scale)?.filename,
-        let appIconFile = appSetup.appIconFolder.findFirstFile(name: appIconFileName)
-    else { return }
+    try restoreIcon(size: size, scale: scale, appSetup: appSetup)
+
+    guard let appIconFileName = appSetup.appIconContents.imageInfo(forSize: size, scale: scale)?.filename else {
+        throw ScriptError.fileNotFound(message: "Missing icon metadata for destination icon \(size) @\(scale)")
+    }
+
+    guard let appIconFile = appSetup.appIconFolder.findFirstFile(name: appIconFileName) else {
+        throw ScriptError.fileNotFound(message: "Destination icon file \(appIconFileName) for \(size) @\(scale)")
+    }
 
     print(appIconFileName.lastPathComponent)
 
-    let version = getVersionText(appSetup: appSetup, designStyle: designStyle)
+    let version = try getVersionText(appSetup: appSetup, designStyle: designStyle)
 
     let newSize = CGSize(
         width: realSize.width,
@@ -255,20 +290,28 @@ func generateIcon(
 
     //  Resizing ribbon
     let resizedRibbonImage = resizeImage(fileName: designStyle.ribbon, size: newSize)
+    if designStyle.ribbon != nil, resizedRibbonImage == nil {
+        throw ScriptError.generalError(message: "Unable to load ribbon image: \(designStyle.ribbon!)")
+    }
 
     //  Resizing title
     let resizedTitleImage = resizeImage(fileName: designStyle.title, size: newSize)
+    if designStyle.title != nil, resizedTitleImage == nil {
+        throw ScriptError.generalError(message: "Unable to load title image: \(designStyle.title!)")
+    }
 
-    guard
-        let iconImageData = try? Data(contentsOf: URL(fileURLWithPath: originalAppIconFile.path))
-    else {
-        return
+    let iconImageData: Data
+    do {
+        iconImageData = try Data(contentsOf: URL(fileURLWithPath: originalAppIconFile.path))
+    } catch {
+        throw ScriptError.fileNotFound(message: "Unable to read original icon image: \(originalAppIconFile.path)")
     }
 
     let iconImage = NSImage(size: NSSize(width: 1024, height: 1024))
-    if let bitmap = NSBitmapImageRep(data: iconImageData) {
-        iconImage.addRepresentation(bitmap)
+    guard let bitmap = NSBitmapImageRep(data: iconImageData) else {
+        throw ScriptError.generalError(message: "Unable to decode original icon image: \(originalAppIconFile.path)")
     }
+    iconImage.addRepresentation(bitmap)
 
     var combinedImage = iconImage
     if let unwrappedResizedRibbonImage = resizedRibbonImage {
@@ -285,7 +328,7 @@ func generateIcon(
         size: realSize.width * CGFloat(designStyle.titleSizeRatio),
         horizontalTitlePosition: CGFloat(designStyle.horizontalTitlePositionRatio),
         verticalTitlePosition: CGFloat(designStyle.verticalTitlePositionRatio),
-        titleAlignment: designStyle.titleAlignment,
+        titleAlignment: designStyle.titleAlignment.rawValue,
         fill: designStyle.titleFillColor,
         stroke: designStyle.titleStrokeColor,
         strokeWidth: CGFloat(designStyle.titleStrokeWidth)
@@ -300,21 +343,18 @@ func generateIcon(
 func restoreIcon(
     size: String,
     scale: String,
-    scriptSetup _: ScriptSetup,
     appSetup: AppSetup
 ) throws {
-    guard
-        let originalAppIconFileName = appSetup.originalAppIconContents.imageInfo(forSize: size, scale: scale)?.filename,
-        let originalAppIconImageFile = appSetup.originalAppIconFolder.findFirstFile(name: originalAppIconFileName)
-    else {
-        return
+    guard let originalAppIconFileName = appSetup.originalAppIconContents.imageInfo(forSize: size, scale: scale)?.filename else {
+        throw ScriptError.fileNotFound(message: "Missing icon metadata for original icon \(size) @\(scale)")
     }
 
-    guard
-        let appIconFileName = appSetup.appIconContents.imageInfo(forSize: size, scale: scale)?.filename
-    else {
-        print("    Icon with size \(size):\(scale) not found")
-        return
+    guard let originalAppIconImageFile = appSetup.originalAppIconFolder.findFirstFile(name: originalAppIconFileName) else {
+        throw ScriptError.fileNotFound(message: "Original icon file \(originalAppIconFileName) for \(size) @\(scale)")
+    }
+
+    guard let appIconFileName = appSetup.appIconContents.imageInfo(forSize: size, scale: scale)?.filename else {
+        throw ScriptError.fileNotFound(message: "Missing icon metadata for destination icon \(size) @\(scale)")
     }
 
     let appIconFilePath = appSetup.appIconFolder.path.appendingPathComponent(path: appIconFileName)
