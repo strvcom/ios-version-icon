@@ -19,12 +19,8 @@ final class VersionIconTests: XCTestCase {
     }
 
     func testOriginalModeFailsWhenRequiredIconFileIsMissing() throws {
-        let projectRoot = try makeTempProject()
+        let projectRoot = try makeProjectFixture(missingOriginalFirstVariantFile: true)
         defer { try? FileManager.default.removeItem(at: projectRoot) }
-
-        try createAppIconSet(at: projectRoot.appendingPathComponent("AppIcon.appiconset"), missingFirstVariantFile: false)
-        try createAppIconSet(at: projectRoot.appendingPathComponent("AppIconOriginal.appiconset"), missingFirstVariantFile: true)
-        try Data("{}".utf8).write(to: projectRoot.appendingPathComponent("Info.plist"))
 
         let result = try runVersionIcon(
             arguments: [
@@ -42,10 +38,31 @@ final class VersionIconTests: XCTestCase {
         XCTAssertTrue(result.stdout.contains("Original icon file"))
     }
 
+    func testTitleRotationMustBeWithinBounds() throws {
+        let projectRoot = try makeProjectFixture()
+        defer { try? FileManager.default.removeItem(at: projectRoot) }
+
+        let result = try runVersionIcon(
+            arguments: [
+                "--resources", repositoryRoot.appendingPathComponent("Bin").path,
+                "--titleRotation", "181",
+            ],
+            environment: [
+                "SRCROOT": projectRoot.path,
+                "PROJECT_DIR": projectRoot.path,
+                "INFOPLIST_FILE": projectRoot.appendingPathComponent("Info.plist").path,
+            ]
+        )
+
+        XCTAssertNotEqual(result.exitCode, 0)
+        XCTAssertTrue(result.stdout.contains("Invalid titleRotation argument"))
+    }
+
     static var allTests = [
         ("testHelpPrintsUsage", testHelpPrintsUsage),
         ("testMissingResourcesReportsResourcesOption", testMissingResourcesReportsResourcesOption),
         ("testOriginalModeFailsWhenRequiredIconFileIsMissing", testOriginalModeFailsWhenRequiredIconFileIsMissing),
+        ("testTitleRotationMustBeWithinBounds", testTitleRotationMustBeWithinBounds),
     ]
 }
 
@@ -74,6 +91,28 @@ private func makeTempProject() throws -> URL {
     let url = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
     try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
     return url
+}
+
+private func makeProjectFixture(missingOriginalFirstVariantFile: Bool = false) throws -> URL {
+    let projectRoot = try makeTempProject()
+    try createAppIconSet(at: projectRoot.appendingPathComponent("AppIcon.appiconset"), missingFirstVariantFile: false)
+    try createAppIconSet(at: projectRoot.appendingPathComponent("AppIconOriginal.appiconset"), missingFirstVariantFile: missingOriginalFirstVariantFile)
+
+    let infoPlist = """
+    <?xml version="1.0" encoding="UTF-8"?>
+    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+    <plist version="1.0">
+    <dict>
+        <key>CFBundleShortVersionString</key>
+        <string>1.2.3</string>
+        <key>CFBundleVersion</key>
+        <string>456</string>
+    </dict>
+    </plist>
+    """
+    try Data(infoPlist.utf8).write(to: projectRoot.appendingPathComponent("Info.plist"))
+
+    return projectRoot
 }
 
 private func createAppIconSet(at url: URL, missingFirstVariantFile: Bool) throws {

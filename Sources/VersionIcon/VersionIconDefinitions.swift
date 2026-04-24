@@ -20,8 +20,10 @@ enum TitleAlignment: String {
 enum VersionStyle: String {
     case dash
     case parenthesis
+    case parenthesisTwoLines
     case versionOnly
     case buildOnly
+    case twoLines
 }
 
 /// Icon overlay design style description
@@ -35,6 +37,7 @@ struct DesignStyle {
     var titleSizeRatio: Double
     var horizontalTitlePositionRatio: Double
     var verticalTitlePositionRatio: Double
+    var titleRotation: Double
     var titleAlignment: TitleAlignment
     var versionStyle: VersionStyle
 }
@@ -193,6 +196,10 @@ func getVersionText(appSetup: AppSetup, designStyle: DesignStyle) throws -> Stri
         return "\(versionNumber) - \(buildNumber)"
     case .parenthesis:
         return "\(versionNumber)(\(buildNumber))"
+    case .parenthesisTwoLines:
+        return "\(versionNumber)\n(\(buildNumber))"
+    case .twoLines:
+        return "\(versionNumber)\n\(buildNumber)"
     case .versionOnly:
         return "\(versionNumber)"
     case .buildOnly:
@@ -328,6 +335,7 @@ func generateIcon(
         size: realSize.width * CGFloat(designStyle.titleSizeRatio),
         horizontalTitlePosition: CGFloat(designStyle.horizontalTitlePositionRatio),
         verticalTitlePosition: CGFloat(designStyle.verticalTitlePositionRatio),
+        titleRotation: CGFloat(designStyle.titleRotation),
         titleAlignment: designStyle.titleAlignment.rawValue,
         fill: designStyle.titleFillColor,
         stroke: designStyle.titleStrokeColor,

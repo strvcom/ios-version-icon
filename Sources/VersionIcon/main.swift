@@ -62,6 +62,9 @@ let horizontalTitlePositionRatio = moderator.add(Argument<String?>
 let verticalTitlePositionRatio = moderator.add(Argument<String?>
     .optionWithValue("verticalTitlePosition", name: "Version Title Size Ratio", description: "Version title position related to icon width.").default("0.2"))
 
+let titleRotation = moderator.add(Argument<String?>
+    .optionWithValue("titleRotation", name: "Version Title Rotation", description: "Version title rotation in degrees from -180 to 180.").default("0"))
+
 let titleAlignment = moderator.add(Argument<String?>
     .optionWithValue("titleAlignment", name: "Version Title Text Alignment", description: "Possible values are left, center, right.").default("center"))
 
@@ -117,6 +120,9 @@ do {
     guard let convertedTitleSizeRatio = Double(titleSizeRatio.value) else { throw ScriptError.argumentError(message: "Invalid titlesize argument") }
     guard let convertedHorizontalTitlePosition = Double(horizontalTitlePositionRatio.value) else { throw ScriptError.argumentError(message: "Invalid horizontalTitlePosition argument") }
     guard let convertedVerticalTitlePosition = Double(verticalTitlePositionRatio.value) else { throw ScriptError.argumentError(message: "Invalid verticalTitlePosition argument") }
+    guard let convertedTitleRotation = Double(titleRotation.value), (-180.0 ... 180.0).contains(convertedTitleRotation) else {
+        throw ScriptError.argumentError(message: "Invalid titleRotation argument")
+    }
     guard let convertedTitleAlignment = TitleAlignment(rawValue: titleAlignment.value)
     else { throw ScriptError.argumentError(message: "Invalid titleAlignment argument") }
     guard let convertedVersionStyle = VersionStyle(rawValue: versionStyle.value)
@@ -137,6 +143,7 @@ do {
         titleSizeRatio: convertedTitleSizeRatio,
         horizontalTitlePositionRatio: convertedHorizontalTitlePosition,
         verticalTitlePositionRatio: convertedVerticalTitlePosition,
+        titleRotation: convertedTitleRotation,
         titleAlignment: convertedTitleAlignment,
         versionStyle: convertedVersionStyle
     )

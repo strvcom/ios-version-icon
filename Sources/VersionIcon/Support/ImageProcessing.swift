@@ -58,7 +58,8 @@ extension NSImage {
         alignmentMode: NSTextAlignment,
         attributes: [NSAttributedString.Key: Any],
         horizontalTitlePosition: CGFloat,
-        verticalTitlePosition: CGFloat
+        verticalTitlePosition: CGFloat,
+        rotation: CGFloat
     ) -> NSImage {
         let text = text as NSString
         let options: NSString.DrawingOptions = [.usesLineFragmentOrigin, .usesFontLeading]
@@ -80,9 +81,23 @@ extension NSImage {
             x: size.width * horizontalTitlePosition + offsetX,
             y: size.height * verticalTitlePosition - textSize.height / 2
         )
+        let textRect = NSRect(origin: point, size: textSize)
+        let rotationCenter = NSPoint(x: textRect.midX, y: textRect.midY)
 
         lockFocus()
-        text.draw(at: point, withAttributes: attributes)
+        guard NSGraphicsContext.current != nil else {
+            unlockFocus()
+            return self
+        }
+
+        NSGraphicsContext.saveGraphicsState()
+        let transform = NSAffineTransform()
+        transform.translateX(by: rotationCenter.x, yBy: rotationCenter.y)
+        transform.rotate(byDegrees: rotation)
+        transform.translateX(by: -rotationCenter.x, yBy: -rotationCenter.y)
+        transform.concat()
+        text.draw(with: textRect, options: options, attributes: attributes)
+        NSGraphicsContext.restoreGraphicsState()
         unlockFocus()
 
         return self
@@ -94,6 +109,7 @@ extension NSImage {
         size: CGFloat,
         horizontalTitlePosition: CGFloat,
         verticalTitlePosition: CGFloat,
+        titleRotation: CGFloat,
         titleAlignment: String,
         fill: NSColor,
         stroke: NSColor,
@@ -125,7 +141,8 @@ extension NSImage {
                 .paragraphStyle: paragraph,
             ],
             horizontalTitlePosition: horizontalTitlePosition,
-            verticalTitlePosition: verticalTitlePosition
+            verticalTitlePosition: verticalTitlePosition,
+            rotation: titleRotation
         )
 
         return fillText.image(
@@ -139,7 +156,8 @@ extension NSImage {
                 .paragraphStyle: paragraph,
             ],
             horizontalTitlePosition: horizontalTitlePosition,
-            verticalTitlePosition: verticalTitlePosition
+            verticalTitlePosition: verticalTitlePosition,
+            rotation: titleRotation
         )
     }
 }

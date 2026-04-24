@@ -85,12 +85,15 @@ fi
     
 * `--verticalTitlePosition <Version Title Size Ratio>`
     * Version title position related to icon width. Default = '0.2'.
+
+* `--titleRotation <Version Title Rotation>`
+    * Version title rotation in degrees. Allowed range is `-180...180`. Default = `0`.
       
 * `--titleAlignment <Version Title Text Alignment>`
     * Possible values are left, center, right. Default = 'center'.
     
 * `--versionStyle <The format of version label>`
-    * Possible values are _dash_, _parenthesis_, _versionOnly_, _buildOnly_. Default = 'dash'.
+    * Possible values are _dash_, _parenthesis_, _parenthesisTwoLines, _twoLines_, _versionOnly_, _buildOnly_. Default = 'dash'.
 
 #### Script Setup
 * `--resources <VersionIcon resources path>`
@@ -122,4 +125,3 @@ Issues and pull requests are welcome!
 ## License
 
 VersionIcon is released under the MIT license. See [LICENSE](https://github.com/DanielCech/DeallocTests/blob/master/LICENSE) for details.
-
