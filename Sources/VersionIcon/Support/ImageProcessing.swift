@@ -161,3 +161,53 @@ extension NSImage {
         )
     }
 }
+
+func resizeImage(image: NSImage?, size: CGSize) -> NSImage? {
+    guard let originalImage = image else {
+        return nil
+    }
+
+    return resizeImageInternal(originalImage: originalImage, size: size)
+}
+
+func resizeImage(fileName: String?, size: CGSize) -> NSImage? {
+    guard let path = fileName, let originalImage = NSImage(contentsOfFile: path) else {
+        return nil
+    }
+
+    return resizeImageInternal(originalImage: originalImage, size: size)
+}
+
+private func resizeImageInternal(originalImage: NSImage, size: CGSize) -> NSImage {
+    let bitmapRep = NSBitmapImageRep(
+        bitmapDataPlanes: nil,
+        pixelsWide: Int(size.width),
+        pixelsHigh: Int(size.height),
+        bitsPerSample: 8,
+        samplesPerPixel: 4,
+        hasAlpha: true,
+        isPlanar: false,
+        colorSpaceName: .calibratedRGB,
+        bytesPerRow: 0,
+        bitsPerPixel: 0
+    )!
+
+    bitmapRep.size = size
+
+    NSGraphicsContext.saveGraphicsState()
+    NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: bitmapRep)
+
+    originalImage.draw(
+        in: NSRect(origin: .zero, size: size),
+        from: NSRect(origin: .zero, size: originalImage.size),
+        operation: .copy,
+        fraction: 1.0
+    )
+
+    NSGraphicsContext.restoreGraphicsState()
+
+    let newImage = NSImage(size: size)
+    newImage.addRepresentation(bitmapRep)
+
+    return newImage
+}

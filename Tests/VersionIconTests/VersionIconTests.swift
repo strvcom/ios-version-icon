@@ -19,7 +19,11 @@ final class VersionIconTests: XCTestCase {
     }
 
     func testOriginalModeFailsWhenRequiredIconFileIsMissing() throws {
-        let projectRoot = try makeProjectFixture(missingOriginalFirstVariantFile: true)
+        let projectRoot = try makeProjectFixture(
+            appIconImages: legacyIconImages,
+            originalAppIconImages: legacyIconImages,
+            missingOriginalFileNames: ["Icon-60@2x.png"]
+        )
         defer { try? FileManager.default.removeItem(at: projectRoot) }
 
         let result = try runVersionIcon(
@@ -35,7 +39,33 @@ final class VersionIconTests: XCTestCase {
         )
 
         XCTAssertNotEqual(result.exitCode, 0)
-        XCTAssertTrue(result.stdout.contains("Original icon file"))
+        XCTAssertTrue(result.stdout.contains("Source icon file"))
+    }
+
+    func testWarnModePrintsErrorButExitsZero() throws {
+        let projectRoot = try makeProjectFixture(
+            appIconImages: legacyIconImages,
+            originalAppIconImages: legacyIconImages,
+            missingOriginalFileNames: ["Icon-60@2x.png"]
+        )
+        defer { try? FileManager.default.removeItem(at: projectRoot) }
+
+        let result = try runVersionIcon(
+            arguments: [
+                "--resources", repositoryRoot.appendingPathComponent("Bin").path,
+                "--original",
+                "--on-error", "warn",
+            ],
+            environment: [
+                "SRCROOT": projectRoot.path,
+                "PROJECT_DIR": projectRoot.path,
+                "INFOPLIST_FILE": projectRoot.appendingPathComponent("Info.plist").path,
+            ]
+        )
+
+        XCTAssertEqual(result.exitCode, 0)
+        XCTAssertTrue(result.stdout.contains("Source icon file"))
+        XCTAssertTrue(result.stdout.contains("build will continue"))
     }
 
     func testTitleRotationMustBeWithinBounds() throws {
@@ -58,11 +88,52 @@ final class VersionIconTests: XCTestCase {
         XCTAssertTrue(result.stdout.contains("Invalid titleRotation argument"))
     }
 
+    func testDynamicVariantDiscoverySupportsFlashcardsStyleIconSet() throws {
+        let projectRoot = try makeProjectFixture(
+            appIconImages: flashcardsStyleIconImages,
+            originalAppIconImages: flashcardsStyleIconImages,
+            infoPlistRelativePath: "Config/Info.plist",
+            nestAssetsUnderProjectDirectory: true
+        )
+        defer { try? FileManager.default.removeItem(at: projectRoot) }
+
+        let destinationIconURL = projectRoot
+            .appendingPathComponent("App")
+            .appendingPathComponent("Resources")
+            .appendingPathComponent("Assets.xcassets")
+            .appendingPathComponent("AppIcon.appiconset")
+            .appendingPathComponent("Flashcards.png")
+        let originalIconData = try Data(contentsOf: destinationIconURL)
+
+        let result = try runVersionIcon(
+            arguments: [
+                "--resources", repositoryRoot.appendingPathComponent("Bin").path,
+                "--ribbon", "Blue-TopRight.png",
+                "--title", "Devel-TopRight.png",
+                "--titleSize", "0.15",
+                "--fillColor", "#FFFFFF",
+            ],
+            environment: [
+                "SRCROOT": projectRoot.path,
+                "PROJECT_DIR": projectRoot.path,
+                "INFOPLIST_FILE": "Config/Info.plist",
+            ]
+        )
+
+        XCTAssertEqual(result.exitCode, 0)
+        XCTAssertTrue(result.stdout.contains("Matched icon entries: 11"))
+
+        let updatedIconData = try Data(contentsOf: destinationIconURL)
+        XCTAssertNotEqual(updatedIconData, originalIconData)
+    }
+
     static var allTests = [
         ("testHelpPrintsUsage", testHelpPrintsUsage),
         ("testMissingResourcesReportsResourcesOption", testMissingResourcesReportsResourcesOption),
         ("testOriginalModeFailsWhenRequiredIconFileIsMissing", testOriginalModeFailsWhenRequiredIconFileIsMissing),
+        ("testWarnModePrintsErrorButExitsZero", testWarnModePrintsErrorButExitsZero),
         ("testTitleRotationMustBeWithinBounds", testTitleRotationMustBeWithinBounds),
+        ("testDynamicVariantDiscoverySupportsFlashcardsStyleIconSet", testDynamicVariantDiscoverySupportsFlashcardsStyleIconSet),
     ]
 }
 
@@ -72,12 +143,34 @@ private struct ProcessResult {
     let stderr: String
 }
 
-private let iconVariants: [(size: String, scale: String, filename: String)] = [
-    ("60x60", "2x", "Icon-60@2x.png"),
-    ("60x60", "3x", "Icon-60@3x.png"),
-    ("76x76", "2x", "Icon-76@2x.png"),
-    ("83.5x83.5", "2x", "Icon-83.5@2x.png"),
-    ("1024x1024", "1x", "Icon-1024@1x.png"),
+private struct FixtureImage {
+    let size: String
+    let idiom: String
+    let filename: String
+    let scale: String?
+    let platform: String?
+}
+
+private let legacyIconImages: [FixtureImage] = [
+    FixtureImage(size: "60x60", idiom: "universal", filename: "Icon-60@2x.png", scale: "2x", platform: nil),
+    FixtureImage(size: "60x60", idiom: "universal", filename: "Icon-60@3x.png", scale: "3x", platform: nil),
+    FixtureImage(size: "76x76", idiom: "universal", filename: "Icon-76@2x.png", scale: "2x", platform: nil),
+    FixtureImage(size: "83.5x83.5", idiom: "universal", filename: "Icon-83.5@2x.png", scale: "2x", platform: nil),
+    FixtureImage(size: "1024x1024", idiom: "universal", filename: "Icon-1024@1x.png", scale: "1x", platform: nil),
+]
+
+private let flashcardsStyleIconImages: [FixtureImage] = [
+    FixtureImage(size: "1024x1024", idiom: "universal", filename: "Flashcards.png", scale: nil, platform: "ios"),
+    FixtureImage(size: "16x16", idiom: "mac", filename: "FlashcardsRounded(16x16).png", scale: "1x", platform: nil),
+    FixtureImage(size: "16x16", idiom: "mac", filename: "FlashcardsRounded(32x32).png", scale: "2x", platform: nil),
+    FixtureImage(size: "32x32", idiom: "mac", filename: "FlashcardsRounded(32x32) 1.png", scale: "1x", platform: nil),
+    FixtureImage(size: "32x32", idiom: "mac", filename: "FlashcardsRounded(64x64).png", scale: "2x", platform: nil),
+    FixtureImage(size: "128x128", idiom: "mac", filename: "FlashcardsRounded(128x128).png", scale: "1x", platform: nil),
+    FixtureImage(size: "128x128", idiom: "mac", filename: "FlashcardsRounded(256x256) 1.png", scale: "2x", platform: nil),
+    FixtureImage(size: "256x256", idiom: "mac", filename: "FlashcardsRounded(256x256) 2.png", scale: "1x", platform: nil),
+    FixtureImage(size: "256x256", idiom: "mac", filename: "FlashcardsRounded(512x512) 1.png", scale: "2x", platform: nil),
+    FixtureImage(size: "512x512", idiom: "mac", filename: "FlashcardsRounded(512x512) 2.png", scale: "1x", platform: nil),
+    FixtureImage(size: "512x512", idiom: "mac", filename: "FlashcardsRounded.png", scale: "2x", platform: nil),
 ]
 
 private var repositoryRoot: URL {
@@ -93,10 +186,35 @@ private func makeTempProject() throws -> URL {
     return url
 }
 
-private func makeProjectFixture(missingOriginalFirstVariantFile: Bool = false) throws -> URL {
+private func makeProjectFixture(
+    appIconImages: [FixtureImage] = legacyIconImages,
+    originalAppIconImages: [FixtureImage]? = nil,
+    missingOriginalFileNames: Set<String> = [],
+    infoPlistRelativePath: String = "Info.plist",
+    nestAssetsUnderProjectDirectory: Bool = false
+) throws -> URL {
     let projectRoot = try makeTempProject()
-    try createAppIconSet(at: projectRoot.appendingPathComponent("AppIcon.appiconset"), missingFirstVariantFile: false)
-    try createAppIconSet(at: projectRoot.appendingPathComponent("AppIconOriginal.appiconset"), missingFirstVariantFile: missingOriginalFirstVariantFile)
+    let assetsRoot = nestAssetsUnderProjectDirectory
+        ? projectRoot.appendingPathComponent("App/Resources/Assets.xcassets", isDirectory: true)
+        : projectRoot
+
+    try FileManager.default.createDirectory(at: assetsRoot, withIntermediateDirectories: true)
+
+    try createAppIconSet(
+        at: assetsRoot.appendingPathComponent("AppIcon.appiconset"),
+        images: appIconImages
+    )
+    try createAppIconSet(
+        at: assetsRoot.appendingPathComponent("AppIconOriginal.appiconset"),
+        images: originalAppIconImages ?? appIconImages,
+        missingFileNames: missingOriginalFileNames
+    )
+
+    let infoPlistURL = projectRoot.appendingPathComponent(infoPlistRelativePath)
+    try FileManager.default.createDirectory(
+        at: infoPlistURL.deletingLastPathComponent(),
+        withIntermediateDirectories: true
+    )
 
     let infoPlist = """
     <?xml version="1.0" encoding="UTF-8"?>
@@ -110,33 +228,41 @@ private func makeProjectFixture(missingOriginalFirstVariantFile: Bool = false) t
     </dict>
     </plist>
     """
-    try Data(infoPlist.utf8).write(to: projectRoot.appendingPathComponent("Info.plist"))
+    try Data(infoPlist.utf8).write(to: infoPlistURL)
 
     return projectRoot
 }
 
-private func createAppIconSet(at url: URL, missingFirstVariantFile: Bool) throws {
+private func createAppIconSet(
+    at url: URL,
+    images: [FixtureImage],
+    missingFileNames: Set<String> = []
+) throws {
     try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
 
-    let images = iconVariants.map { variant in
-        [
-            "size": variant.size,
-            "idiom": "universal",
-            "filename": variant.filename,
-            "scale": variant.scale,
+    let entries = images.map { image -> [String: String] in
+        var entry = [
+            "size": image.size,
+            "idiom": image.idiom,
+            "filename": image.filename,
         ]
+
+        if let scale = image.scale {
+            entry["scale"] = scale
+        }
+        if let platform = image.platform {
+            entry["platform"] = platform
+        }
+
+        return entry
     }
 
-    let contents = ["images": images]
+    let contents = ["images": entries]
     let jsonData = try JSONSerialization.data(withJSONObject: contents, options: [.prettyPrinted, .sortedKeys])
     try jsonData.write(to: url.appendingPathComponent("Contents.json"))
 
-    for (index, variant) in iconVariants.enumerated() {
-        if missingFirstVariantFile && index == 0 {
-            continue
-        }
-
-        try makePNG(at: url.appendingPathComponent(variant.filename), size: 8)
+    for image in images where !missingFileNames.contains(image.filename) {
+        try makePNG(at: url.appendingPathComponent(image.filename), size: 32)
     }
 }
 
@@ -169,6 +295,7 @@ private func makePNG(at url: URL, size: Int) throws {
 
 private func runVersionIcon(arguments: [String], environment: [String: String] = [:]) throws -> ProcessResult {
     let process = Process()
+    process.currentDirectoryURL = repositoryRoot
     process.executableURL = productsDirectory.appendingPathComponent("VersionIcon")
     process.arguments = arguments
     process.environment = ProcessInfo.processInfo.environment.merging(environment) { _, new in new }

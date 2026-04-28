@@ -8,20 +8,6 @@ import SwiftShell
 
 // MARK: - Main script
 
-struct IconVariant {
-    let size: String
-    let scale: String
-    let realSize: CGSize
-}
-
-let iconVariants = [
-    IconVariant(size: "60x60", scale: "2x", realSize: CGSize(width: 120, height: 120)),
-    IconVariant(size: "60x60", scale: "3x", realSize: CGSize(width: 180, height: 180)),
-    IconVariant(size: "76x76", scale: "2x", realSize: CGSize(width: 152, height: 152)),
-    IconVariant(size: "83.5x83.5", scale: "2x", realSize: CGSize(width: 167, height: 167)),
-    IconVariant(size: "1024x1024", scale: "1x", realSize: CGSize(width: 1024, height: 1024)),
-]
-
 let moderator = Moderator(description: "VersionIcon prepares iOS icon with ribbon, text and version info overlay")
 moderator.usageFormText = "versionIcon <params>"
 
@@ -69,26 +55,36 @@ let titleAlignment = moderator.add(Argument<String?>
     .optionWithValue("titleAlignment", name: "Version Title Text Alignment", description: "Possible values are left, center, right.").default("center"))
 
 let versionStyle = moderator.add(Argument<String?>
-    .optionWithValue("versionStyle", name: "The format of version label", description: "Possible values are dash, parenthesis, versionOnly, buildOnly.").default("dash"))
+    .optionWithValue("versionStyle", name: "The format of version label", description: "Possible values are dash, parenthesis, parenthesisTwoLines, twoLines, versionOnly, buildOnly and empty.").default("dash"))
 
 // AppSetup elements
 
 let resourcesPath = moderator.add(Argument<String?>
     .optionWithValue("resources", name: "VersionIcon resources path", description: "Default path where Ribbons and Titles folders are located. It is not necessary to set when script is executed as a build phase in Xcode"))
 
+let onError = moderator.add(Argument<String?>
+    .optionWithValue("onError", name: "Error handling mode", description: "Possible values are fail and warn.").default("fail"))
+
 let original = moderator.add(.option("original", description: "Use original icon with no modifications (for production)"))
 
 let help = moderator.add(.option("help", description: "Shows this info summary"))
 
+var errorHandlingMode: ErrorHandlingMode = .fail
+
 do {
-    try moderator.parse()
+    try moderator.parse(normalizedArguments(Array(CommandLine.arguments.dropFirst())))
+
+    if help.value {
+        print(normalizedUsageText(moderator.usagetext))
+        exit(0)
+    }
 
     print("⌚️ Processing")
 
-    if help.value {
-        print(moderator.usagetext)
-        exit(0)
+    guard let convertedErrorHandlingMode = ErrorHandlingMode(rawValue: onError.value) else {
+        throw ScriptError.argumentError(message: "Invalid on-error argument")
     }
+    errorHandlingMode = convertedErrorHandlingMode
 
     guard let resourcesPath = resourcesPath.value ?? main.env["PODS_ROOT"]?.appendingPathComponent(path: "VersionIcon/Bin") else {
         throw ScriptError.argumentError(message: "You must specify the resources path using --resources parameter")
@@ -96,16 +92,17 @@ do {
 
     let scriptSetup = ScriptSetup(appIcon: appIcon.value, appIconOriginal: appIconOriginal.value, resourcesPath: resourcesPath)
     let appSetup = try getAppSetup(scriptSetup: scriptSetup)
+    let resolvedVariants = try resolveIconVariants(appSetup: appSetup)
 
-    guard !original.value else {
-        for variant in iconVariants {
-            try restoreIcon(
-                size: variant.size,
-                scale: variant.scale,
-                appSetup: appSetup
-            )
-        }
+    print("  Matched icon entries: \(resolvedVariants.variants.count)")
+    for note in resolvedVariants.notes {
+        print("⚠️ warning: \(note)")
+    }
 
+    if original.value {
+        let outputs = try prepareRestoreOutputs(variants: resolvedVariants.variants)
+        try applyOutputs(outputs)
+        print("✅ Done")
         exit(0)
     }
 
@@ -130,8 +127,6 @@ do {
     guard let convertedTitleFillColor = NSColor(hexString: titleFillColor.value) else { throw ScriptError.argumentError(message: "Invalid fillcolor argument") }
     guard let convertedTitleStrokeColor = NSColor(hexString: titleStrokeColor.value) else { throw ScriptError.argumentError(message: "Invalid strokecolor argument") }
     guard let convertedTitleStrokeWidth = Double(titleStrokeWidth.value) else { throw ScriptError.argumentError(message: "Invalid strokewidth argument") }
-    try validateImageResource(fileName: ribbon.value, kind: "ribbon")
-    try validateImageResource(fileName: title.value, kind: "title")
 
     let designStyle = DesignStyle(
         ribbon: ribbon.value,
@@ -148,22 +143,40 @@ do {
         versionStyle: convertedVersionStyle
     )
 
-    for variant in iconVariants {
-        try generateIcon(
-            size: variant.size,
-            scale: variant.scale,
-            realSize: variant.realSize,
-            designStyle: designStyle,
-            appSetup: appSetup
-        )
-    }
+    let outputs = try generateIconOutputs(
+        variants: resolvedVariants.variants,
+        designStyle: designStyle,
+        appSetup: appSetup
+    )
+    try applyOutputs(outputs)
 
     print("✅ Done")
 } catch {
-    if let printableError = error as? PrintableError { print(printableError.errorDescription) }
-    else {
+    if let printableError = error as? PrintableError {
+        print(printableError.errorDescription)
+    } else {
         print(error.localizedDescription)
     }
 
+    if errorHandlingMode == .warn {
+        print("⚠️ warning: VersionIcon failed but the build will continue because --on-error warn was used.")
+        exit(0)
+    }
+
     exit(Int32(error._code))
+}
+
+private func normalizedArguments(_ arguments: [String]) -> [String] {
+    arguments.map { argument in
+        switch argument {
+        case "--on-error":
+            "--onError"
+        default:
+            argument
+        }
+    }
+}
+
+private func normalizedUsageText(_ usageText: String) -> String {
+    usageText.replacingOccurrences(of: "--onError", with: "--on-error")
 }
