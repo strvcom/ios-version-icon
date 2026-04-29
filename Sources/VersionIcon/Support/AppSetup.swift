@@ -19,9 +19,10 @@ func validateImageResource(fileName: String?, kind: String) throws {
 
 func getAppSetup(scriptSetup: ScriptSetup) throws -> AppSetup {
     #if DEBUGGING
-        let sourceRootPath = "/Users/danielcech/Documents/ios-project-template"
-        let projectDir = "/Users/danielcech/Documents/ios-project-template"
-        let infoPlistFile = "Example/Application/Info.plist"
+        // Enter testing values from your project
+        let sourceRootPath = ""
+        let projectDir = ""
+        let infoPlistFile = ""
     #else
         guard
             let sourceRootPath = main.env["SRCROOT"],
