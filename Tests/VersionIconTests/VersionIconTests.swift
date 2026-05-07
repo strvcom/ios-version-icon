@@ -1,5 +1,4 @@
 import AppKit
-import class Foundation.Bundle
 import Foundation
 import XCTest
 
