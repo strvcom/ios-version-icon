@@ -2,7 +2,6 @@ import AppKit
 import Files
 import Foundation
 import Moderator
-import ScriptToolkit
 import SwiftShell
 
 // ========================================================================================================================================
@@ -49,79 +48,61 @@ let horizontalTitlePositionRatio = moderator.add(Argument<String?>
 let verticalTitlePositionRatio = moderator.add(Argument<String?>
     .optionWithValue("verticalTitlePosition", name: "Version Title Size Ratio", description: "Version title position related to icon width.").default("0.2"))
 
+let titleRotation = moderator.add(Argument<String?>
+    .optionWithValue("titleRotation", name: "Version Title Rotation", description: "Version title rotation in degrees from -180 to 180.").default("0"))
+
 let titleAlignment = moderator.add(Argument<String?>
     .optionWithValue("titleAlignment", name: "Version Title Text Alignment", description: "Possible values are left, center, right.").default("center"))
 
 let versionStyle = moderator.add(Argument<String?>
-    .optionWithValue("versionStyle", name: "The format of version label", description: "Possible values are dash, parenthesis, versionOnly, buildOnly.").default("dash"))
+    .optionWithValue("versionStyle", name: "The format of version label", description: "Possible values are dash, parenthesis, parenthesisTwoLines, twoLines, versionOnly, buildOnly and empty.").default("dash"))
 
 // AppSetup elements
 
 let resourcesPath = moderator.add(Argument<String?>
     .optionWithValue("resources", name: "VersionIcon resources path", description: "Default path where Ribbons and Titles folders are located. It is not necessary to set when script is executed as a build phase in Xcode"))
 
+let onError = moderator.add(Argument<String?>
+    .optionWithValue("onError", name: "Error handling mode", description: "Possible values are fail and warn.").default("fail"))
+
 let original = moderator.add(.option("original", description: "Use original icon with no modifications (for production)"))
 
 let help = moderator.add(.option("help", description: "Shows this info summary"))
 
-do {
-    try moderator.parse()
+var errorHandlingMode: ErrorHandlingMode = .fail
 
-    print("⌚️ Processing")
+do {
+    try moderator.parse(normalizedArguments(Array(CommandLine.arguments.dropFirst())))
 
     if help.value {
-        print(moderator.usagetext)
+        print(normalizedUsageText(moderator.usagetext))
         exit(0)
     }
 
+    print("⌚️ Processing")
+
+    guard let convertedErrorHandlingMode = ErrorHandlingMode(rawValue: onError.value) else {
+        throw ScriptError.argumentError(message: "Invalid on-error argument")
+    }
+    errorHandlingMode = convertedErrorHandlingMode
+
     guard let resourcesPath = resourcesPath.value ?? main.env["PODS_ROOT"]?.appendingPathComponent(path: "VersionIcon/Bin") else {
-        throw ScriptError.argumentError(message: "You must specify the resources path using --resourcesPath parameter")
+        throw ScriptError.argumentError(message: "You must specify the resources path using --resources parameter")
     }
 
     let scriptSetup = ScriptSetup(appIcon: appIcon.value, appIconOriginal: appIconOriginal.value, resourcesPath: resourcesPath)
     let appSetup = try getAppSetup(scriptSetup: scriptSetup)
+    let resolvedVariants = try resolveIconVariants(appSetup: appSetup)
 
-    guard !original.value else {
-        // iPhone App Icon @2x
-        try restoreIcon(
-            size: "60x60",
-            scale: "2x",
-            scriptSetup: scriptSetup,
-            appSetup: appSetup
-        )
+    print("  Matched icon entries: \(resolvedVariants.variants.count)")
+    for note in resolvedVariants.notes {
+        print("⚠️ warning: \(note)")
+    }
 
-        // iPhone App Icon @3x
-        try restoreIcon(
-            size: "60x60",
-            scale: "3x",
-            scriptSetup: scriptSetup,
-            appSetup: appSetup
-        )
-
-        // iPad App Icon @2x
-        try restoreIcon(
-            size: "76x76",
-            scale: "2x",
-            scriptSetup: scriptSetup,
-            appSetup: appSetup
-        )
-
-        // iPad Pro App Icon @2x
-        try restoreIcon(
-            size: "83.5x83.5",
-            scale: "2x",
-            scriptSetup: scriptSetup,
-            appSetup: appSetup
-        )
-
-        // Universal iOS marketing icon
-        try restoreIcon(
-            size: "1024x1024",
-            scale: "1x",
-            scriptSetup: scriptSetup,
-            appSetup: appSetup
-        )
-
+    if original.value {
+        let outputs = try prepareRestoreOutputs(variants: resolvedVariants.variants)
+        try applyOutputs(outputs)
+        print("✅ Done")
         exit(0)
     }
 
@@ -136,8 +117,13 @@ do {
     guard let convertedTitleSizeRatio = Double(titleSizeRatio.value) else { throw ScriptError.argumentError(message: "Invalid titlesize argument") }
     guard let convertedHorizontalTitlePosition = Double(horizontalTitlePositionRatio.value) else { throw ScriptError.argumentError(message: "Invalid horizontalTitlePosition argument") }
     guard let convertedVerticalTitlePosition = Double(verticalTitlePositionRatio.value) else { throw ScriptError.argumentError(message: "Invalid verticalTitlePosition argument") }
-    guard titleAlignment.value == "left" || titleAlignment.value == "center" || titleAlignment.value == "right" else { throw ScriptError.argumentError(message: "Invalid titleAlignment argument") }
-    guard versionStyle.value == "dash" || versionStyle.value == "parenthesis" || versionStyle.value == "versionOnly" || versionStyle.value == "buildOnly" else { throw ScriptError.argumentError(message: "Invalid versionStyle argument") }
+    guard let convertedTitleRotation = Double(titleRotation.value), (-180.0 ... 180.0).contains(convertedTitleRotation) else {
+        throw ScriptError.argumentError(message: "Invalid titleRotation argument")
+    }
+    guard let convertedTitleAlignment = TitleAlignment(rawValue: titleAlignment.value)
+    else { throw ScriptError.argumentError(message: "Invalid titleAlignment argument") }
+    guard let convertedVersionStyle = VersionStyle(rawValue: versionStyle.value)
+    else { throw ScriptError.argumentError(message: "Invalid versionStyle argument") }
     guard let convertedTitleFillColor = NSColor(hexString: titleFillColor.value) else { throw ScriptError.argumentError(message: "Invalid fillcolor argument") }
     guard let convertedTitleStrokeColor = NSColor(hexString: titleStrokeColor.value) else { throw ScriptError.argumentError(message: "Invalid strokecolor argument") }
     guard let convertedTitleStrokeWidth = Double(titleStrokeWidth.value) else { throw ScriptError.argumentError(message: "Invalid strokewidth argument") }
@@ -152,66 +138,45 @@ do {
         titleSizeRatio: convertedTitleSizeRatio,
         horizontalTitlePositionRatio: convertedHorizontalTitlePosition,
         verticalTitlePositionRatio: convertedVerticalTitlePosition,
-        titleAlignment: titleAlignment.value,
-        versionStyle: versionStyle.value
+        titleRotation: convertedTitleRotation,
+        titleAlignment: convertedTitleAlignment,
+        versionStyle: convertedVersionStyle
     )
 
-    // iPhone App Icon @2x
-    try generateIcon(
-        size: "60x60",
-        scale: "2x",
-        realSize: CGSize(width: 120, height: 120),
+    let outputs = try generateIconOutputs(
+        variants: resolvedVariants.variants,
         designStyle: designStyle,
-        scriptSetup: scriptSetup,
         appSetup: appSetup
     )
-
-    // iPhone App Icon @3x
-    try generateIcon(
-        size: "60x60",
-        scale: "3x",
-        realSize: CGSize(width: 180, height: 180),
-        designStyle: designStyle,
-        scriptSetup: scriptSetup,
-        appSetup: appSetup
-    )
-
-    // iPad App Icon @2x
-    try generateIcon(
-        size: "76x76",
-        scale: "2x",
-        realSize: CGSize(width: 152, height: 152),
-        designStyle: designStyle,
-        scriptSetup: scriptSetup,
-        appSetup: appSetup
-    )
-
-    // iPad Pro App Icon @2x
-    try generateIcon(
-        size: "83.5x83.5",
-        scale: "2x",
-        realSize: CGSize(width: 167, height: 167),
-        designStyle: designStyle,
-        scriptSetup: scriptSetup,
-        appSetup: appSetup
-    )
-
-    // Universal iOS marketing icon
-    try generateIcon(
-        size: "1024x1024",
-        scale: "1x",
-        realSize: CGSize(width: 1024, height: 1024),
-        designStyle: designStyle,
-        scriptSetup: scriptSetup,
-        appSetup: appSetup
-    )
+    try applyOutputs(outputs)
 
     print("✅ Done")
 } catch {
-    if let printableError = error as? PrintableError { print(printableError.errorDescription) }
-    else {
+    if let printableError = error as? PrintableError {
+        print(printableError.errorDescription)
+    } else {
         print(error.localizedDescription)
     }
 
+    if errorHandlingMode == .warn {
+        print("⚠️ warning: VersionIcon failed but the build will continue because --on-error warn was used.")
+        exit(0)
+    }
+
     exit(Int32(error._code))
+}
+
+private func normalizedArguments(_ arguments: [String]) -> [String] {
+    arguments.map { argument in
+        switch argument {
+        case "--on-error":
+            "--onError"
+        default:
+            argument
+        }
+    }
+}
+
+private func normalizedUsageText(_ usageText: String) -> String {
+    usageText.replacingOccurrences(of: "--onError", with: "--on-error")
 }

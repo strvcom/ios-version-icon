@@ -43,13 +43,14 @@ $ pod install
 ## Usage
 
 * Make a duplicate of your app icon resource in asset catalog - let's have for example _AppIcon_ and _AppIconOriginal_. The copy is used as a backup. Production builds typically have no icon overlays. (if your project contains icon resource with other than this default name, you need to specify it using `--appIcon` and/or `--appIconOriginal` parameter.
+* VersionIcon discovers matching icon entries directly from both `Contents.json` files, so it works with modern asset catalogs instead of assuming a fixed list of legacy iOS sizes.
 * Create a new Run Script Phase in Build Settings > Build Phases in your app
 * Use this shell script:
 ```shell
 if [ "${CONFIGURATION}" = "Release" ]; then
     "Pods/VersionIcon/Bin/VersionIcon" --resources "Pods/VersionIcon/Bin" --original
 else
-    "Pods/VersionIcon/Bin/VersionIcon"  --ribbon Blue-TopRight.png --title Devel-TopRight.png --resources "Pods/VersionIcon/Bin" --strokeWidth 0.07
+    "Pods/VersionIcon/Bin/VersionIcon" --ribbon Blue-TopRight.png --title Devel-TopRight.png --resources "Pods/VersionIcon/Bin" --strokeWidth 0.07 --on-error warn
 fi
 ```
 * If your projects contains different configuration names, you'll need to adjust the script.
@@ -85,16 +86,22 @@ fi
     
 * `--verticalTitlePosition <Version Title Size Ratio>`
     * Version title position related to icon width. Default = '0.2'.
+
+* `--titleRotation <Version Title Rotation>`
+    * Version title rotation in degrees. Allowed range is `-180...180`. Default = `0`.
       
 * `--titleAlignment <Version Title Text Alignment>`
     * Possible values are left, center, right. Default = 'center'.
     
 * `--versionStyle <The format of version label>`
-    * Possible values are _dash_, _parenthesis_, _versionOnly_, _buildOnly_. Default = 'dash'.
+    * Possible values are _dash_, _parenthesis_, _parenthesisTwoLines, _twoLines_, _versionOnly_, _buildOnly_ and _empty_. Default = 'dash'.
 
 #### Script Setup
 * `--resources <VersionIcon resources path>`
     * Default path where Ribbons and Titles folders are located. It is not necessary to set when script is executed as a build phase in Xcode
+
+* `--on-error <fail|warn>`
+    * Controls whether VersionIcon should fail the build (`fail`, default) or print the error and continue (`warn`).
     
 * `--original`
     * If you need to use just original icon without any modifications, use this parameter. The production app typically has no icon overlay.
@@ -122,4 +129,3 @@ Issues and pull requests are welcome!
 ## License
 
 VersionIcon is released under the MIT license. See [LICENSE](https://github.com/DanielCech/DeallocTests/blob/master/LICENSE) for details.
-
