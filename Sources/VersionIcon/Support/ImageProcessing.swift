@@ -151,7 +151,7 @@ extension NSImage {
             attributes: [
                 .foregroundColor: NSColor.clear,
                 .strokeColor: stroke,
-                .strokeWidth: strokeWidth * size,
+                .strokeWidth: strokeWidth * 100,
                 .font: titleFont,
                 .paragraphStyle: paragraph,
             ],
