@@ -1,6 +1,10 @@
 import AppKit
 import Foundation
 
+private enum Constant {
+    static let percentOfFontSize: CGFloat = 100
+}
+
 extension NSImage {
     var pngRepresentation: Data? {
         guard let tiff = tiffRepresentation,
@@ -151,7 +155,7 @@ extension NSImage {
             attributes: [
                 .foregroundColor: NSColor.clear,
                 .strokeColor: stroke,
-                .strokeWidth: strokeWidth * size,
+                .strokeWidth: strokeWidth * Constant.percentOfFontSize,
                 .font: titleFont,
                 .paragraphStyle: paragraph,
             ],
