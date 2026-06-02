@@ -16,23 +16,6 @@ extension NSImage {
         return tiffData.representation(using: .png, properties: [:])
     }
 
-    private func imagesMatch(_ other: NSImage) -> Bool {
-        tiffRepresentation == other.tiffRepresentation
-    }
-
-    func savePNGRepresentationToURL(url: URL, onlyChange: Bool = true) throws {
-        guard let pngData = pngRepresentation else {
-            throw ScriptError.generalError(message: "Unable to create PNG data")
-        }
-
-        if let originalImage = NSImage(contentsOf: url), onlyChange, imagesMatch(originalImage) {
-            print("    Keeping original file - no change")
-            return
-        }
-
-        try pngData.write(to: url, options: .atomicWrite)
-    }
-
     func combine(withImage image: NSImage) throws -> NSImage {
         guard let foregroundData = image.tiffRepresentation,
               let foreground = CIImage(data: foregroundData),
