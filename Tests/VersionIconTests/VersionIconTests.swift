@@ -126,6 +126,66 @@ final class VersionIconTests: XCTestCase {
         XCTAssertNotEqual(updatedIconData, originalIconData)
     }
 
+    func testSecondRunWithSameInputsKeepsIconsUntouched() throws {
+        let projectRoot = try makeProjectFixture()
+        defer { try? FileManager.default.removeItem(at: projectRoot) }
+
+        let arguments = [
+            "--resources", repositoryRoot.appendingPathComponent("Bin").path,
+            "--ribbon", "Blue-TopRight.png",
+            "--title", "Devel-TopRight.png",
+        ]
+        let environment = [
+            "SRCROOT": projectRoot.path,
+            "PROJECT_DIR": projectRoot.path,
+            "INFOPLIST_FILE": projectRoot.appendingPathComponent("Info.plist").path,
+        ]
+
+        let firstRun = try runVersionIcon(arguments: arguments, environment: environment)
+        XCTAssertEqual(firstRun.exitCode, 0)
+        XCTAssertFalse(firstRun.stdout.contains("no change"))
+
+        let iconURL = projectRoot
+            .appendingPathComponent("AppIcon.appiconset")
+            .appendingPathComponent("Icon-60@2x.png")
+        let dataAfterFirstRun = try Data(contentsOf: iconURL)
+
+        let secondRun = try runVersionIcon(arguments: arguments, environment: environment)
+        XCTAssertEqual(secondRun.exitCode, 0)
+        XCTAssertEqual(
+            secondRun.stdout.components(separatedBy: "no change").count - 1,
+            legacyIconImages.count,
+            "All icon variants should be kept untouched on the second run"
+        )
+        XCTAssertEqual(try Data(contentsOf: iconURL), dataAfterFirstRun)
+    }
+
+    func testChangedInputRegeneratesIcon() throws {
+        let projectRoot = try makeProjectFixture()
+        defer { try? FileManager.default.removeItem(at: projectRoot) }
+
+        let arguments = [
+            "--resources", repositoryRoot.appendingPathComponent("Bin").path,
+            "--ribbon", "Blue-TopRight.png",
+            "--title", "Devel-TopRight.png",
+        ]
+        let environment = [
+            "SRCROOT": projectRoot.path,
+            "PROJECT_DIR": projectRoot.path,
+            "INFOPLIST_FILE": projectRoot.appendingPathComponent("Info.plist").path,
+        ]
+
+        let firstRun = try runVersionIcon(arguments: arguments, environment: environment)
+        XCTAssertEqual(firstRun.exitCode, 0)
+
+        let secondRun = try runVersionIcon(
+            arguments: arguments + ["--fillColor", "#FF0000"],
+            environment: environment
+        )
+        XCTAssertEqual(secondRun.exitCode, 0)
+        XCTAssertFalse(secondRun.stdout.contains("no change"))
+    }
+
     static var allTests = [
         ("testHelpPrintsUsage", testHelpPrintsUsage),
         ("testMissingResourcesReportsResourcesOption", testMissingResourcesReportsResourcesOption),
@@ -133,6 +193,8 @@ final class VersionIconTests: XCTestCase {
         ("testWarnModePrintsErrorButExitsZero", testWarnModePrintsErrorButExitsZero),
         ("testTitleRotationMustBeWithinBounds", testTitleRotationMustBeWithinBounds),
         ("testDynamicVariantDiscoverySupportsFlashcardsStyleIconSet", testDynamicVariantDiscoverySupportsFlashcardsStyleIconSet),
+        ("testSecondRunWithSameInputsKeepsIconsUntouched", testSecondRunWithSameInputsKeepsIconsUntouched),
+        ("testChangedInputRegeneratesIcon", testChangedInputRegeneratesIcon),
     ]
 }
 

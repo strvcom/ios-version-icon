@@ -9,8 +9,33 @@ func generateIconOutputs(
     try validateDesignStyle(designStyle)
     let version = try getVersionText(appSetup: appSetup, designStyle: designStyle)
 
-    return try variants.map { variant in
+    let ribbonData = try designStyle.ribbon.map { try imageResourceData(path: $0, kind: "ribbon") }
+    let titleData = try designStyle.title.map { try imageResourceData(path: $0, kind: "title") }
+
+    return try variants.compactMap { variant in
         print("  \(variant.key.description)")
+
+        let iconImageData: Data
+        do {
+            iconImageData = try Data(contentsOf: URL(fileURLWithPath: variant.sourcePath))
+        } catch {
+            throw ScriptError.fileNotFound(message: "Unable to read original icon image: \(variant.sourcePath)")
+        }
+
+        let state = IconStateRecord(
+            version: version,
+            designStyle: designStyle,
+            pixelSize: variant.pixelSize,
+            sourceIconData: iconImageData,
+            ribbonData: ribbonData,
+            titleData: titleData
+        )
+
+        if let existingData = try? Data(contentsOf: URL(fileURLWithPath: variant.destinationPath)),
+           IconStateRecord.stored(in: existingData) == state {
+            print("    Keeping original file - no change (\(variant.key.description))")
+            return nil
+        }
 
         let resizedRibbonImage = resizeImage(fileName: designStyle.ribbon, size: variant.pixelSize)
         if designStyle.ribbon != nil, resizedRibbonImage == nil {
@@ -20,13 +45,6 @@ func generateIconOutputs(
         let resizedTitleImage = resizeImage(fileName: designStyle.title, size: variant.pixelSize)
         if designStyle.title != nil, resizedTitleImage == nil {
             throw ScriptError.generalError(message: "Unable to load title image: \(designStyle.title!)")
-        }
-
-        let iconImageData: Data
-        do {
-            iconImageData = try Data(contentsOf: URL(fileURLWithPath: variant.sourcePath))
-        } catch {
-            throw ScriptError.fileNotFound(message: "Unable to read original icon image: \(variant.sourcePath)")
         }
 
         let iconImage = NSImage(size: variant.pixelSize)
@@ -62,12 +80,23 @@ func generateIconOutputs(
         guard let outputData = resizedIcon.pngRepresentation else {
             throw ScriptError.generalError(message: "Unable to create PNG data for \(variant.key.description)")
         }
+        guard let stampedData = state.embedded(into: outputData) else {
+            throw ScriptError.generalError(message: "Unable to embed VersionIcon metadata for \(variant.key.description)")
+        }
 
         return FileOutput(
             destinationPath: variant.destinationPath,
-            data: outputData,
+            data: stampedData,
             label: variant.key.description
         )
+    }
+}
+
+private func imageResourceData(path: String, kind: String) throws -> Data {
+    do {
+        return try Data(contentsOf: URL(fileURLWithPath: path))
+    } catch {
+        throw ScriptError.fileNotFound(message: "Unable to read \(kind) image: \(path)")
     }
 }
 
