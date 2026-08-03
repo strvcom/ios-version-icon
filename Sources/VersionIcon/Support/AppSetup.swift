@@ -45,20 +45,40 @@ func getAppSetup(scriptSetup: ScriptSetup) throws -> AppSetup {
         sourceRootPath: sourceRootPath
     )
 
-    guard let appIconFolder = try locateAppIconFolder(
-        named: scriptSetup.appIcon,
-        projectDir: projectDir,
-        sourceRootFolder: sourceFolder
-    ) else {
-        throw ScriptError.folderNotFound(message: "\(scriptSetup.appIcon).appiconset - icon asset folder")
-    }
-
     guard let originalAppIconFolder = try locateAppIconFolder(
         named: scriptSetup.appIconOriginal,
         projectDir: projectDir,
         sourceRootFolder: sourceFolder
     ) else {
         throw ScriptError.folderNotFound(message: "\(scriptSetup.appIconOriginal).appiconset - source icon asset for modifications")
+    }
+
+    let appIconFolder: Folder
+    if let outputAssetCatalog = scriptSetup.outputAssetCatalog {
+        let outputAppIconFolderPath = outputAssetCatalog.appendingPathComponent(path: "\(scriptSetup.appIcon).appiconset")
+
+        let outputURL = URL(fileURLWithPath: outputAppIconFolderPath).standardizedFileURL
+        let originalURL = URL(fileURLWithPath: originalAppIconFolder.path).standardizedFileURL
+        guard outputURL != originalURL else {
+            throw ScriptError.argumentError(message: "Generated asset catalog must not contain the original app icon")
+        }
+
+        try prepareGeneratedAppIconFolder(
+            at: outputAppIconFolderPath,
+            sourceFolder: originalAppIconFolder
+        )
+
+        appIconFolder = try Folder(path: outputAppIconFolderPath)
+    } else {
+        guard let existingAppIconFolder = try locateAppIconFolder(
+            named: scriptSetup.appIcon,
+            projectDir: projectDir,
+            sourceRootFolder: sourceFolder
+        ) else {
+            throw ScriptError.folderNotFound(message: "\(scriptSetup.appIcon).appiconset - icon asset folder")
+        }
+
+        appIconFolder = existingAppIconFolder
     }
 
     return try AppSetup(
@@ -70,6 +90,35 @@ func getAppSetup(scriptSetup: ScriptSetup) throws -> AppSetup {
         originalAppIconFolder: originalAppIconFolder,
         originalAppIconContents: iconMetadata(iconFolder: originalAppIconFolder)
     )
+}
+
+private func prepareGeneratedAppIconFolder(at path: String, sourceFolder: Folder) throws {
+    let fileManager = FileManager.default
+    let outputFolderURL = URL(fileURLWithPath: path, isDirectory: true)
+    let outputCatalogURL = outputFolderURL.deletingLastPathComponent()
+
+    try fileManager.createDirectory(at: outputFolderURL, withIntermediateDirectories: true)
+
+    let catalogContentsURL = outputCatalogURL.appendingPathComponent("Contents.json")
+    if !fileManager.fileExists(atPath: catalogContentsURL.path) {
+        let catalogContents = """
+        {
+          "info" : {
+            "author" : "xcode",
+            "version" : 1
+          }
+        }
+        """
+        try Data(catalogContents.utf8).write(to: catalogContentsURL, options: .atomic)
+    }
+
+    let sourceContents = try sourceFolder.file(named: "Contents.json")
+    let sourceData = try sourceContents.read()
+    let outputContentsURL = outputFolderURL.appendingPathComponent("Contents.json")
+    let outputData = try? Data(contentsOf: outputContentsURL)
+    if outputData != sourceData {
+        try sourceData.write(to: outputContentsURL, options: .atomic)
+    }
 }
 
 func iconMetadata(iconFolder: Folder) throws -> IconMetadata {

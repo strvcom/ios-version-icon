@@ -19,6 +19,13 @@ let appIcon = moderator.add(Argument<String?>
 let appIconOriginal = moderator.add(Argument<String?>
     .optionWithValue("appIconOriginal", name: "The name of original app icon asset", description: "This asset is used as backup of original icon.").default("AppIconOriginal"))
 
+let outputAssetCatalog = moderator.add(Argument<String?>
+    .optionWithValue(
+        "outputAssetCatalog",
+        name: "Generated asset catalog path",
+        description: "Optional .xcassets directory where the generated app icon is written. When provided, source assets are not modified."
+    ))
+
 // DesignStyle elements
 
 var ribbon = moderator.add(Argument<String?>
@@ -90,7 +97,12 @@ do {
         throw ScriptError.argumentError(message: "You must specify the resources path using --resources parameter")
     }
 
-    let scriptSetup = ScriptSetup(appIcon: appIcon.value, appIconOriginal: appIconOriginal.value, resourcesPath: resourcesPath)
+    let scriptSetup = ScriptSetup(
+        appIcon: appIcon.value,
+        appIconOriginal: appIconOriginal.value,
+        outputAssetCatalog: outputAssetCatalog.value,
+        resourcesPath: resourcesPath
+    )
     let appSetup = try getAppSetup(scriptSetup: scriptSetup)
     let resolvedVariants = try resolveIconVariants(appSetup: appSetup)
 

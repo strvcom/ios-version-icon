@@ -186,6 +186,58 @@ final class VersionIconTests: XCTestCase {
         XCTAssertFalse(secondRun.stdout.contains("no change"))
     }
 
+    func testGeneratedAssetCatalogModeLeavesSourceIconsUntouched() throws {
+        let projectRoot = try makeProjectFixture()
+        defer { try? FileManager.default.removeItem(at: projectRoot) }
+
+        let sourceIconURL = projectRoot
+            .appendingPathComponent("AppIcon.appiconset")
+            .appendingPathComponent("Icon-60@2x.png")
+        let sourceIconData = try Data(contentsOf: sourceIconURL)
+        let generatedCatalogURL = projectRoot.appendingPathComponent("VersionIconGenerated.xcassets")
+        let environment = [
+            "SRCROOT": projectRoot.path,
+            "PROJECT_DIR": projectRoot.path,
+            "INFOPLIST_FILE": projectRoot.appendingPathComponent("Info.plist").path,
+        ]
+
+        let developmentRun = try runVersionIcon(
+            arguments: [
+                "--resources", repositoryRoot.appendingPathComponent("Bin").path,
+                "--appIcon", "AppIcon-Development",
+                "--outputAssetCatalog", generatedCatalogURL.path,
+                "--ribbon", "Blue-TopRight.png",
+                "--title", "Devel-TopRight.png",
+            ],
+            environment: environment
+        )
+        XCTAssertEqual(developmentRun.exitCode, 0)
+
+        let stagingRun = try runVersionIcon(
+            arguments: [
+                "--resources", repositoryRoot.appendingPathComponent("Bin").path,
+                "--appIcon", "AppIcon-Staging",
+                "--outputAssetCatalog", generatedCatalogURL.path,
+                "--ribbon", "Blue-TopRight.png",
+                "--title", "Devel-TopRight.png",
+            ],
+            environment: environment
+        )
+        XCTAssertEqual(stagingRun.exitCode, 0)
+        XCTAssertEqual(try Data(contentsOf: sourceIconURL), sourceIconData)
+
+        let developmentOutput = generatedCatalogURL
+            .appendingPathComponent("AppIcon-Development.appiconset")
+            .appendingPathComponent("Icon-60@2x.png")
+        let stagingOutput = generatedCatalogURL
+            .appendingPathComponent("AppIcon-Staging.appiconset")
+            .appendingPathComponent("Icon-60@2x.png")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: developmentOutput.path))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: stagingOutput.path))
+        XCTAssertNotEqual(try Data(contentsOf: developmentOutput), sourceIconData)
+        XCTAssertNotEqual(try Data(contentsOf: stagingOutput), sourceIconData)
+    }
+
     static var allTests = [
         ("testHelpPrintsUsage", testHelpPrintsUsage),
         ("testMissingResourcesReportsResourcesOption", testMissingResourcesReportsResourcesOption),
@@ -195,6 +247,7 @@ final class VersionIconTests: XCTestCase {
         ("testDynamicVariantDiscoverySupportsFlashcardsStyleIconSet", testDynamicVariantDiscoverySupportsFlashcardsStyleIconSet),
         ("testSecondRunWithSameInputsKeepsIconsUntouched", testSecondRunWithSameInputsKeepsIconsUntouched),
         ("testChangedInputRegeneratesIcon", testChangedInputRegeneratesIcon),
+        ("testGeneratedAssetCatalogModeLeavesSourceIconsUntouched", testGeneratedAssetCatalogModeLeavesSourceIconsUntouched),
     ]
 }
 
