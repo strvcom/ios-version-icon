@@ -63,6 +63,12 @@ func getAppSetup(scriptSetup: ScriptSetup) throws -> AppSetup {
             throw ScriptError.argumentError(message: "Generated asset catalog must not contain the original app icon")
         }
 
+        let outputCatalogURL = outputURL.deletingLastPathComponent()
+        let originalCatalogURL = originalURL.deletingLastPathComponent()
+        guard outputCatalogURL != originalCatalogURL else {
+            throw ScriptError.argumentError(message: "Generated asset catalog must not be the same catalog as the original app icon's catalog")
+        }
+
         try prepareGeneratedAppIconFolder(
             at: outputAppIconFolderPath,
             sourceFolder: originalAppIconFolder

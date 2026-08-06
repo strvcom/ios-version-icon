@@ -6,6 +6,4 @@ This PR adds an opt-in generated asset catalog mode so VersionIcon can create co
 - Document configuration-specific output names and Xcode build-phase setup.
 - Add regression coverage proving multiple generated configurations leave source icons untouched.
 - Update the distributed `Bin/VersionIcon` binary.
-
-## Screenshot
-TODO
+- Reject an `--outputAssetCatalog` that resolves to the same catalog as `--appIconOriginal`, in addition to the existing exact-folder check.

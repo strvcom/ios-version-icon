@@ -238,6 +238,32 @@ final class VersionIconTests: XCTestCase {
         XCTAssertNotEqual(try Data(contentsOf: stagingOutput), sourceIconData)
     }
 
+    func testOutputAssetCatalogRejectsSameCatalogAsOriginal() throws {
+        let projectRoot = try makeProjectFixture()
+        defer { try? FileManager.default.removeItem(at: projectRoot) }
+
+        let result = try runVersionIcon(
+            arguments: [
+                "--resources", repositoryRoot.appendingPathComponent("Bin").path,
+                "--appIcon", "AppIcon-Development",
+                "--outputAssetCatalog", projectRoot.path,
+                "--ribbon", "Blue-TopRight.png",
+                "--title", "Devel-TopRight.png",
+            ],
+            environment: [
+                "SRCROOT": projectRoot.path,
+                "PROJECT_DIR": projectRoot.path,
+                "INFOPLIST_FILE": projectRoot.appendingPathComponent("Info.plist").path,
+            ]
+        )
+
+        XCTAssertNotEqual(result.exitCode, 0)
+        XCTAssertTrue(result.stdout.contains("same catalog as the original app icon's catalog"))
+        XCTAssertFalse(FileManager.default.fileExists(
+            atPath: projectRoot.appendingPathComponent("AppIcon-Development.appiconset").path
+        ))
+    }
+
     static var allTests = [
         ("testHelpPrintsUsage", testHelpPrintsUsage),
         ("testMissingResourcesReportsResourcesOption", testMissingResourcesReportsResourcesOption),
@@ -248,6 +274,7 @@ final class VersionIconTests: XCTestCase {
         ("testSecondRunWithSameInputsKeepsIconsUntouched", testSecondRunWithSameInputsKeepsIconsUntouched),
         ("testChangedInputRegeneratesIcon", testChangedInputRegeneratesIcon),
         ("testGeneratedAssetCatalogModeLeavesSourceIconsUntouched", testGeneratedAssetCatalogModeLeavesSourceIconsUntouched),
+        ("testOutputAssetCatalogRejectsSameCatalogAsOriginal", testOutputAssetCatalogRejectsSameCatalogAsOriginal),
     ]
 }
 
