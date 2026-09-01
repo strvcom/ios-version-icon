@@ -41,6 +41,7 @@ struct DesignStyle {
 struct ScriptSetup {
     var appIcon: String
     var appIconOriginal: String
+    var outputAssetCatalog: String?
     var resourcesPath: String
 }
 
