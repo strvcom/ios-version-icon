@@ -79,7 +79,7 @@ let help = moderator.add(.option("help", description: "Shows this info summary")
 var errorHandlingMode: ErrorHandlingMode = .fail
 
 do {
-    try moderator.parse(normalizedArguments(Array(CommandLine.arguments.dropFirst())))
+    try moderator.parse(lastValueWinsForRepeatedFlags(normalizedArguments(Array(CommandLine.arguments.dropFirst()))))
 
     if help.value {
         print(normalizedUsageText(moderator.usagetext))
