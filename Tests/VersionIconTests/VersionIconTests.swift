@@ -67,6 +67,32 @@ final class VersionIconTests: XCTestCase {
         XCTAssertTrue(result.stdout.contains("build will continue"))
     }
 
+    func testLastRepeatedOptionWins() throws {
+        let projectRoot = try makeProjectFixture(
+            appIconImages: legacyIconImages,
+            originalAppIconImages: legacyIconImages,
+            missingOriginalFileNames: ["Icon-60@2x.png"]
+        )
+        defer { try? FileManager.default.removeItem(at: projectRoot) }
+
+        let result = try runVersionIcon(
+            arguments: [
+                "--resources", repositoryRoot.appendingPathComponent("Bin").path,
+                "--original",
+                "--on-error", "fail",
+                "--on-error", "warn",
+            ],
+            environment: [
+                "SRCROOT": projectRoot.path,
+                "PROJECT_DIR": projectRoot.path,
+                "INFOPLIST_FILE": projectRoot.appendingPathComponent("Info.plist").path,
+            ]
+        )
+
+        XCTAssertEqual(result.exitCode, 0)
+        XCTAssertTrue(result.stdout.contains("build will continue"))
+    }
+
     func testTitleRotationMustBeWithinBounds() throws {
         let projectRoot = try makeProjectFixture()
         defer { try? FileManager.default.removeItem(at: projectRoot) }
@@ -269,6 +295,7 @@ final class VersionIconTests: XCTestCase {
         ("testMissingResourcesReportsResourcesOption", testMissingResourcesReportsResourcesOption),
         ("testOriginalModeFailsWhenRequiredIconFileIsMissing", testOriginalModeFailsWhenRequiredIconFileIsMissing),
         ("testWarnModePrintsErrorButExitsZero", testWarnModePrintsErrorButExitsZero),
+        ("testLastRepeatedOptionWins", testLastRepeatedOptionWins),
         ("testTitleRotationMustBeWithinBounds", testTitleRotationMustBeWithinBounds),
         ("testDynamicVariantDiscoverySupportsFlashcardsStyleIconSet", testDynamicVariantDiscoverySupportsFlashcardsStyleIconSet),
         ("testSecondRunWithSameInputsKeepsIconsUntouched", testSecondRunWithSameInputsKeepsIconsUntouched),

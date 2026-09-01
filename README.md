@@ -59,20 +59,20 @@ fi
 
 ### Generated asset catalog mode
 
-By default, VersionIcon keeps the historical behavior and writes generated images into the `--appIcon` asset. For new projects, use `--outputAssetCatalog` to keep source assets immutable:
+By default, VersionIcon keeps the historical behavior and writes generated images into the `--appIcon` asset. For new projects, use `--outputAssetCatalog` to keep source assets immutable. The project still supplies the usual `AppIconOriginal` asset as the source image; the generated catalog is output managed by VersionIcon and does not require manual maintenance. Set `VERSION_ICON_BIN` to the VersionIcon executable built with Swift Package Manager (for example, `.build/release/VersionIcon`) and `VERSION_ICON_RESOURCES` to the package's `Bin` directory:
 
 ```shell
-"Pods/VersionIcon/Bin/VersionIcon" \
+"${VERSION_ICON_BIN}" \
     --appIcon "AppIcon-${CONFIGURATION}" \
     --appIconOriginal AppIconOriginal \
     --outputAssetCatalog "${SRCROOT}/VersionIconGenerated.xcassets" \
-    --resources "Pods/VersionIcon/Bin" \
+    --resources "${VERSION_ICON_RESOURCES}" \
     --ribbon Blue-TopRight.png \
     --title Devel-TopRight.png \
     --on-error warn
 ```
 
-Add `VersionIconGenerated.xcassets` to the target's Copy Bundle Resources phase, keep the VersionIcon Run Script phase before it, and set the target's Primary App Icon Set Name to `AppIcon-${CONFIGURATION}`. The generated catalog is a build artifact and should be ignored by source control. Using a distinct output app icon name per configuration prevents switching configurations from rewriting another configuration's generated files.
+Add `VersionIconGenerated.xcassets` to the target's Copy Bundle Resources phase, keep the VersionIcon Run Script phase before it, and set the target's Primary App Icon Set Name to `AppIcon-${CONFIGURATION}`. VersionIcon creates the catalog and app-icon sets on demand; the generated catalog is a build artifact and should be ignored by source control. Using a distinct output app icon name per configuration prevents switching configurations from rewriting another configuration's generated files.
 
 ## Parameters
 #### Ribbon Style
