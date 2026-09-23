@@ -19,6 +19,13 @@ let appIcon = moderator.add(Argument<String?>
 let appIconOriginal = moderator.add(Argument<String?>
     .optionWithValue("appIconOriginal", name: "The name of original app icon asset", description: "This asset is used as backup of original icon.").default("AppIconOriginal"))
 
+let outputAssetCatalog = moderator.add(Argument<String?>
+    .optionWithValue(
+        "outputAssetCatalog",
+        name: "Generated asset catalog path",
+        description: "Optional .xcassets directory where the generated app icon is written. When provided, source assets are not modified."
+    ))
+
 // DesignStyle elements
 
 var ribbon = moderator.add(Argument<String?>
@@ -72,7 +79,7 @@ let help = moderator.add(.option("help", description: "Shows this info summary")
 var errorHandlingMode: ErrorHandlingMode = .fail
 
 do {
-    try moderator.parse(normalizedArguments(Array(CommandLine.arguments.dropFirst())))
+    try moderator.parse(lastValueWinsForRepeatedFlags(normalizedArguments(Array(CommandLine.arguments.dropFirst()))))
 
     if help.value {
         print(normalizedUsageText(moderator.usagetext))
@@ -90,7 +97,12 @@ do {
         throw ScriptError.argumentError(message: "You must specify the resources path using --resources parameter")
     }
 
-    let scriptSetup = ScriptSetup(appIcon: appIcon.value, appIconOriginal: appIconOriginal.value, resourcesPath: resourcesPath)
+    let scriptSetup = ScriptSetup(
+        appIcon: appIcon.value,
+        appIconOriginal: appIconOriginal.value,
+        outputAssetCatalog: outputAssetCatalog.value,
+        resourcesPath: resourcesPath
+    )
     let appSetup = try getAppSetup(scriptSetup: scriptSetup)
     let resolvedVariants = try resolveIconVariants(appSetup: appSetup)
 
@@ -175,6 +187,76 @@ private func normalizedArguments(_ arguments: [String]) -> [String] {
             argument
         }
     }
+}
+
+private func lastValueWinsForRepeatedFlags(_ arguments: [String]) -> [String] {
+    let valueOptionNames: Set = [
+        "--appIcon",
+        "--appIconOriginal",
+        "--outputAssetCatalog",
+        "--ribbon",
+        "--title",
+        "--fillColor",
+        "--strokeColor",
+        "--strokeWidth",
+        "--font",
+        "--titleSize",
+        "--horizontalTitlePosition",
+        "--verticalTitlePosition",
+        "--titleRotation",
+        "--titleAlignment",
+        "--versionStyle",
+        "--resources",
+        "--onError",
+    ]
+    var argumentsToKeep = Array(repeating: true, count: arguments.count)
+    var previousOccurrences = [String: (optionIndex: Int, valueIndex: Int?)]()
+    var index = 0
+
+    while index < arguments.count {
+        let argument = arguments[index]
+        if argument == "--" {
+            break
+        }
+
+        let optionName = argument.split(separator: "=", maxSplits: 1).first.map(String.init)
+        guard let optionName, valueOptionNames.contains(optionName) else {
+            index += 1
+            continue
+        }
+
+        let valueIndex: Int?
+        if argument.contains("=") {
+            valueIndex = nil
+        } else if index + 1 < arguments.count, !isOption(arguments[index + 1]) {
+            valueIndex = index + 1
+        } else {
+            valueIndex = nil
+        }
+
+        if let previousOccurrence = previousOccurrences[optionName] {
+            argumentsToKeep[previousOccurrence.optionIndex] = false
+            if let previousValueIndex = previousOccurrence.valueIndex {
+                argumentsToKeep[previousValueIndex] = false
+            }
+        }
+        previousOccurrences[optionName] = (index, valueIndex)
+        index = valueIndex.map { $0 + 1 } ?? index + 1
+    }
+
+    return arguments.enumerated().compactMap { index, argument in
+        argumentsToKeep[index] ? argument : nil
+    }
+}
+
+private func isOption(_ argument: String) -> Bool {
+    guard argument.first == "-",
+          let secondCharacter = argument.dropFirst().first
+    else {
+        return false
+    }
+
+    return !secondCharacter.isNumber
 }
 
 private func normalizedUsageText(_ usageText: String) -> String {
