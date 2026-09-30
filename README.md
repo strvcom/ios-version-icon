@@ -38,8 +38,8 @@ VersionIcon adds an overlay to your iOS app icon showing the build variant and t
 ```shell
 "$VERSION_ICON_PATH/VersionIcon" \
     --resources "$VERSION_ICON_PATH" \
-    --ribbon Blue-TopRight.png \
-    --title Devel-TopRight.png \
+    --ribbon Gold-TopRight.png \
+    --title Staging-TopRight.png \
     --titleSize 0.17 \
     --fillColor "#000000" \
     --strokeColor "#FFFFFF" \
@@ -60,8 +60,8 @@ VersionIcon adds an overlay to your iOS app icon showing the build variant and t
 ```shell
 "$VERSION_ICON_PATH/VersionIcon" \
     --resources "$VERSION_ICON_PATH" \
-    --ribbon Blue-TopRight.png \
-    --title Devel-TopRight.png \
+    --ribbon Red-TopRight.png \
+    --title Prod-TopRight.png \
     --titleSize 0.17 \
     --fillColor "#000000" \
     --strokeColor "#FFFFFF" \
@@ -83,8 +83,8 @@ VersionIcon adds an overlay to your iOS app icon showing the build variant and t
 ```shell
 "$VERSION_ICON_PATH/VersionIcon" \
     --resources "$VERSION_ICON_PATH" \
-    --ribbon Blue-TopRight.png \
-    --title Devel-TopRight.png \
+    --ribbon Green-TopRight.png \
+    --title Demo-TopRight.png \
     --titleSize 0.17 \
     --fillColor "#000000" \
     --strokeColor "#FFFFFF" \
@@ -106,8 +106,8 @@ VersionIcon adds an overlay to your iOS app icon showing the build variant and t
 ```shell
 "$VERSION_ICON_PATH/VersionIcon" \
     --resources "$VERSION_ICON_PATH" \
-    --ribbon Blue-TopRight.png \
-    --title Devel-TopRight.png \
+    --ribbon Purple-TopRight.png \
+    --title Beta-TopRight.png \
     --titleSize 0.17 \
     --fillColor "#000000" \
     --strokeColor "#FFFFFF" \
@@ -129,8 +129,8 @@ VersionIcon adds an overlay to your iOS app icon showing the build variant and t
 ```shell
 "$VERSION_ICON_PATH/VersionIcon" \
     --resources "$VERSION_ICON_PATH" \
-    --ribbon Blue-TopRight.png \
-    --title Devel-TopRight.png \
+    --ribbon Cyan-TopRight.png \
+    --title MVP-TopRight.png \
     --titleSize 0.17 \
     --fillColor "#000000" \
     --strokeColor "#FFFFFF" \
@@ -168,7 +168,7 @@ VersionIcon adds an overlay to your iOS app icon showing the build variant and t
   </tr>
 </table>
 
-<sub>Icons of the JustFlip app (version 1.2.0, build 16) rendered with the Development ribbon. See the <a href="#full-example">full example</a> for the complete build phase.</sub>
+<sub>Icons of the JustFlip app (version 1.2.0, build 16) with different ribbons and titles. See the <a href="#full-example">full example</a> for the complete build phase.</sub>
 
 ## Contents
 
