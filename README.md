@@ -14,10 +14,16 @@ VersionIcon adds an overlay to your iOS app icon showing the build variant and t
 **`dash`**
 
 ```shell
-"$VERSION_ICON_PATH/VersionIcon" --resources "$VERSION_ICON_PATH" \
-    --ribbon Blue-TopRight.png --title Devel-TopRight.png \
-    --titleSize 0.17 --fillColor "#000000" --strokeColor "#FFFFFF" --strokeWidth 0.05 \
-    --horizontalTitlePosition 0.5 --verticalTitlePosition 0.2 \
+"$VERSION_ICON_PATH/VersionIcon" \
+    --resources "$VERSION_ICON_PATH" \
+    --ribbon Blue-TopRight.png \
+    --title Devel-TopRight.png \
+    --titleSize 0.17 \
+    --fillColor "#000000" \
+    --strokeColor "#FFFFFF" \
+    --strokeWidth 0.05 \
+    --horizontalTitlePosition 0.5 \
+    --verticalTitlePosition 0.2 \
     --versionStyle dash
 ```
 
@@ -30,10 +36,16 @@ VersionIcon adds an overlay to your iOS app icon showing the build variant and t
 **`parenthesis`**
 
 ```shell
-"$VERSION_ICON_PATH/VersionIcon" --resources "$VERSION_ICON_PATH" \
-    --ribbon Blue-TopRight.png --title Devel-TopRight.png \
-    --titleSize 0.17 --fillColor "#000000" --strokeColor "#FFFFFF" --strokeWidth 0.05 \
-    --horizontalTitlePosition 0.5 --verticalTitlePosition 0.2 \
+"$VERSION_ICON_PATH/VersionIcon" \
+    --resources "$VERSION_ICON_PATH" \
+    --ribbon Blue-TopRight.png \
+    --title Devel-TopRight.png \
+    --titleSize 0.17 \
+    --fillColor "#000000" \
+    --strokeColor "#FFFFFF" \
+    --strokeWidth 0.05 \
+    --horizontalTitlePosition 0.5 \
+    --verticalTitlePosition 0.2 \
     --versionStyle parenthesis
 ```
 
@@ -46,10 +58,17 @@ VersionIcon adds an overlay to your iOS app icon showing the build variant and t
 **`parenthesisTwoLines`**
 
 ```shell
-"$VERSION_ICON_PATH/VersionIcon" --resources "$VERSION_ICON_PATH" \
-    --ribbon Blue-TopRight.png --title Devel-TopRight.png \
-    --titleSize 0.17 --fillColor "#000000" --strokeColor "#FFFFFF" --strokeWidth 0.05 \
-    --titleRotation 18 --horizontalTitlePosition 0.35 --verticalTitlePosition 0.7 \
+"$VERSION_ICON_PATH/VersionIcon" \
+    --resources "$VERSION_ICON_PATH" \
+    --ribbon Blue-TopRight.png \
+    --title Devel-TopRight.png \
+    --titleSize 0.17 \
+    --fillColor "#000000" \
+    --strokeColor "#FFFFFF" \
+    --strokeWidth 0.05 \
+    --titleRotation 18 \
+    --horizontalTitlePosition 0.35 \
+    --verticalTitlePosition 0.7 \
     --versionStyle parenthesisTwoLines
 ```
 
@@ -62,10 +81,17 @@ VersionIcon adds an overlay to your iOS app icon showing the build variant and t
 **`twoLines`**
 
 ```shell
-"$VERSION_ICON_PATH/VersionIcon" --resources "$VERSION_ICON_PATH" \
-    --ribbon Blue-TopRight.png --title Devel-TopRight.png \
-    --titleSize 0.17 --fillColor "#000000" --strokeColor "#FFFFFF" --strokeWidth 0.05 \
-    --titleRotation 18 --horizontalTitlePosition 0.35 --verticalTitlePosition 0.7 \
+"$VERSION_ICON_PATH/VersionIcon" \
+    --resources "$VERSION_ICON_PATH" \
+    --ribbon Blue-TopRight.png \
+    --title Devel-TopRight.png \
+    --titleSize 0.17 \
+    --fillColor "#000000" \
+    --strokeColor "#FFFFFF" \
+    --strokeWidth 0.05 \
+    --titleRotation 18 \
+    --horizontalTitlePosition 0.35 \
+    --verticalTitlePosition 0.7 \
     --versionStyle twoLines
 ```
 
@@ -78,10 +104,17 @@ VersionIcon adds an overlay to your iOS app icon showing the build variant and t
 **`versionOnly`**
 
 ```shell
-"$VERSION_ICON_PATH/VersionIcon" --resources "$VERSION_ICON_PATH" \
-    --ribbon Blue-TopRight.png --title Devel-TopRight.png \
-    --titleSize 0.17 --fillColor "#000000" --strokeColor "#FFFFFF" --strokeWidth 0.05 \
-    --titleRotation 18 --horizontalTitlePosition 0.35 --verticalTitlePosition 0.7 \
+"$VERSION_ICON_PATH/VersionIcon" \
+    --resources "$VERSION_ICON_PATH" \
+    --ribbon Blue-TopRight.png \
+    --title Devel-TopRight.png \
+    --titleSize 0.17 \
+    --fillColor "#000000" \
+    --strokeColor "#FFFFFF" \
+    --strokeWidth 0.05 \
+    --titleRotation 18 \
+    --horizontalTitlePosition 0.35 \
+    --verticalTitlePosition 0.7 \
     --versionStyle versionOnly
 ```
 
@@ -94,10 +127,17 @@ VersionIcon adds an overlay to your iOS app icon showing the build variant and t
 **`buildOnly`**
 
 ```shell
-"$VERSION_ICON_PATH/VersionIcon" --resources "$VERSION_ICON_PATH" \
-    --ribbon Blue-TopRight.png --title Devel-TopRight.png \
-    --titleSize 0.17 --fillColor "#000000" --strokeColor "#FFFFFF" --strokeWidth 0.05 \
-    --titleRotation 18 --horizontalTitlePosition 0.35 --verticalTitlePosition 0.7 \
+"$VERSION_ICON_PATH/VersionIcon" \
+    --resources "$VERSION_ICON_PATH" \
+    --ribbon Blue-TopRight.png \
+    --title Devel-TopRight.png \
+    --titleSize 0.17 \
+    --fillColor "#000000" \
+    --strokeColor "#FFFFFF" \
+    --strokeWidth 0.05 \
+    --titleRotation 18 \
+    --horizontalTitlePosition 0.35 \
+    --verticalTitlePosition 0.7 \
     --versionStyle buildOnly
 ```
 
@@ -110,10 +150,17 @@ VersionIcon adds an overlay to your iOS app icon showing the build variant and t
 **`empty`**
 
 ```shell
-"$VERSION_ICON_PATH/VersionIcon" --resources "$VERSION_ICON_PATH" \
-    --ribbon Blue-TopRight.png --title Devel-TopRight.png \
-    --titleSize 0.17 --fillColor "#000000" --strokeColor "#FFFFFF" --strokeWidth 0.05 \
-    --titleRotation 18 --horizontalTitlePosition 0.35 --verticalTitlePosition 0.7 \
+"$VERSION_ICON_PATH/VersionIcon" \
+    --resources "$VERSION_ICON_PATH" \
+    --ribbon Blue-TopRight.png \
+    --title Devel-TopRight.png \
+    --titleSize 0.17 \
+    --fillColor "#000000" \
+    --strokeColor "#FFFFFF" \
+    --strokeWidth 0.05 \
+    --titleRotation 18 \
+    --horizontalTitlePosition 0.35 \
+    --verticalTitlePosition 0.7 \
     --versionStyle empty
 ```
 
