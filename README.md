@@ -1,185 +1,26 @@
-[![Version](https://img.shields.io/cocoapods/v/VersionIcon.svg?style=flat)](https://cocoapods.org/pods/VersionIcon)
-[![License](https://img.shields.io/cocoapods/l/VersionIcon.svg?style=flat)](LICENSE)
+[![Release](https://img.shields.io/github/v/tag/strvcom/ios-version-icon?label=release&style=flat)](https://github.com/strvcom/ios-version-icon/tags)
+[![License](https://img.shields.io/github/license/strvcom/ios-version-icon?style=flat)](LICENSE)
 [![SPM compatible](https://img.shields.io/badge/SPM-compatible-brightgreen.svg?style=flat)](https://swift.org/package-manager/)
 
 # VersionIcon
 
 VersionIcon adds an overlay to your iOS app icon showing the build variant and the app version. The overlay can include a ribbon with the build variant (_Devel_, _Staging_, _Production_…), the version and build number, or both. You can customize the overlay in many ways or supply your own graphics. VersionIcon ships as a prebuilt binary, so it doesn't depend on how your project is set up.
 
-<table>
-  <tr>
-    <td align="center" width="200"><img src="Documentation/Icons/dash.png" width="180" height="180" alt="dash" /></td>
-    <td>
+<p align="center">
+    <img src="Documentation/Icons/parenthesisTwoLines.png" width="180" alt="App icon with a red PROD ribbon and a 1.2.0 (16) version label" />
+</p>
 
-**`dash`**
-
-```shell
-"$VERSION_ICON_PATH/VersionIcon" \
-    --resources "$VERSION_ICON_PATH" \
-    --ribbon Blue-TopRight.png \
-    --title Devel-TopRight.png \
-    --titleSize 0.17 \
-    --fillColor "#000000" \
-    --strokeColor "#FFFFFF" \
-    --strokeWidth 0.05 \
-    --horizontalTitlePosition 0.5 \
-    --verticalTitlePosition 0.2 \
-    --versionStyle dash
-```
-
-</td>
-  </tr>
-  <tr>
-    <td align="center" width="200"><img src="Documentation/Icons/parenthesis.png" width="180" height="180" alt="parenthesis" /></td>
-    <td>
-
-**`parenthesis`**
-
-```shell
-"$VERSION_ICON_PATH/VersionIcon" \
-    --resources "$VERSION_ICON_PATH" \
-    --ribbon Gold-TopRight.png \
-    --title Staging-TopRight.png \
-    --titleSize 0.17 \
-    --fillColor "#000000" \
-    --strokeColor "#FFFFFF" \
-    --strokeWidth 0.05 \
-    --horizontalTitlePosition 0.5 \
-    --verticalTitlePosition 0.2 \
-    --versionStyle parenthesis
-```
-
-</td>
-  </tr>
-  <tr>
-    <td align="center" width="200"><img src="Documentation/Icons/parenthesisTwoLines.png" width="180" height="180" alt="parenthesisTwoLines" /></td>
-    <td>
-
-**`parenthesisTwoLines`**
-
-```shell
-"$VERSION_ICON_PATH/VersionIcon" \
-    --resources "$VERSION_ICON_PATH" \
-    --ribbon Red-TopRight.png \
-    --title Prod-TopRight.png \
-    --titleSize 0.17 \
-    --fillColor "#000000" \
-    --strokeColor "#FFFFFF" \
-    --strokeWidth 0.05 \
-    --titleRotation 18 \
-    --horizontalTitlePosition 0.35 \
-    --verticalTitlePosition 0.7 \
-    --versionStyle parenthesisTwoLines
-```
-
-</td>
-  </tr>
-  <tr>
-    <td align="center" width="200"><img src="Documentation/Icons/twoLines.png" width="180" height="180" alt="twoLines" /></td>
-    <td>
-
-**`twoLines`**
-
-```shell
-"$VERSION_ICON_PATH/VersionIcon" \
-    --resources "$VERSION_ICON_PATH" \
-    --ribbon Green-TopRight.png \
-    --title Demo-TopRight.png \
-    --titleSize 0.17 \
-    --fillColor "#000000" \
-    --strokeColor "#FFFFFF" \
-    --strokeWidth 0.05 \
-    --titleRotation 18 \
-    --horizontalTitlePosition 0.35 \
-    --verticalTitlePosition 0.7 \
-    --versionStyle twoLines
-```
-
-</td>
-  </tr>
-  <tr>
-    <td align="center" width="200"><img src="Documentation/Icons/versionOnly.png" width="180" height="180" alt="versionOnly" /></td>
-    <td>
-
-**`versionOnly`**
-
-```shell
-"$VERSION_ICON_PATH/VersionIcon" \
-    --resources "$VERSION_ICON_PATH" \
-    --ribbon Purple-TopRight.png \
-    --title Beta-TopRight.png \
-    --titleSize 0.17 \
-    --fillColor "#000000" \
-    --strokeColor "#FFFFFF" \
-    --strokeWidth 0.05 \
-    --titleRotation 18 \
-    --horizontalTitlePosition 0.35 \
-    --verticalTitlePosition 0.7 \
-    --versionStyle versionOnly
-```
-
-</td>
-  </tr>
-  <tr>
-    <td align="center" width="200"><img src="Documentation/Icons/buildOnly.png" width="180" height="180" alt="buildOnly" /></td>
-    <td>
-
-**`buildOnly`**
-
-```shell
-"$VERSION_ICON_PATH/VersionIcon" \
-    --resources "$VERSION_ICON_PATH" \
-    --ribbon Cyan-TopRight.png \
-    --title MVP-TopRight.png \
-    --titleSize 0.17 \
-    --fillColor "#000000" \
-    --strokeColor "#FFFFFF" \
-    --strokeWidth 0.05 \
-    --titleRotation 18 \
-    --horizontalTitlePosition 0.35 \
-    --verticalTitlePosition 0.7 \
-    --versionStyle buildOnly
-```
-
-</td>
-  </tr>
-  <tr>
-    <td align="center" width="200"><img src="Documentation/Icons/empty.png" width="180" height="180" alt="empty" /></td>
-    <td>
-
-**`empty`**
-
-```shell
-"$VERSION_ICON_PATH/VersionIcon" \
-    --resources "$VERSION_ICON_PATH" \
-    --ribbon Blue-TopRight.png \
-    --title Devel-TopRight.png \
-    --titleSize 0.17 \
-    --fillColor "#000000" \
-    --strokeColor "#FFFFFF" \
-    --strokeWidth 0.05 \
-    --titleRotation 18 \
-    --horizontalTitlePosition 0.35 \
-    --verticalTitlePosition 0.7 \
-    --versionStyle empty
-```
-
-</td>
-  </tr>
-</table>
-
-<sub>Icons of the JustFlip app (version 1.2.0, build 16) with different ribbons and titles. See the <a href="#full-example">full example</a> for the complete build phase.</sub>
+<p align="center"><sub>More ribbons and label styles are in <a href="#examples">Examples</a>.</sub></p>
 
 ## Contents
 
 - [Requirements](#requirements)
 - [Installation](#installation)
-  - [Swift Package Manager](#swift-package-manager)
-  - [CocoaPods](#cocoapods)
 - [Usage](#usage)
   - [Full example](#full-example)
   - [Generated asset catalog mode](#generated-asset-catalog-mode)
 - [Parameters](#parameters)
+- [Examples](#examples)
 - [Debugging](#debugging)
 - [Contributing](#contributing)
 - [Author](#author)
@@ -193,9 +34,7 @@ VersionIcon adds an overlay to your iOS app icon showing the build variant and t
 
 ## Installation
 
-### Swift Package Manager
-
-Add the package to your project. In Xcode, choose **File › Add Package Dependencies…** and enter the URL, or add it in `Package.swift`:
+VersionIcon is distributed as a Swift package. Add the package to your project. In Xcode, choose **File › Add Package Dependencies…** and enter the URL, or add it in `Package.swift`:
 
 ```swift
 .package(url: "https://github.com/strvcom/ios-version-icon.git", from: "1.2.3")
@@ -208,25 +47,13 @@ The package ships a prebuilt `VersionIcon` binary and its resources in the `Bin`
 | Xcode package dependency | `"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/ios-version-icon/Bin"` |
 | [Tuist](https://tuist.io) (`Tuist/Package.swift`) | `"${SRCROOT}/../Tuist/.build/checkouts/ios-version-icon/Bin"` |
 
-### CocoaPods
-
-Add VersionIcon to your `Podfile`:
-
-```ruby
-pod 'VersionIcon', '~> 1.2.3'
-```
-
-Then run `pod install`. The binary is installed at `Pods/VersionIcon/Bin/VersionIcon`.
-
 ## Usage
 
 1. **Duplicate your app icon** in the asset catalog, so you have for example `AppIcon` and `AppIconOriginal`. VersionIcon uses the copy as the untouched source, and production builds usually ship it without any overlay. If your icon sets have other names, pass them with `--appIcon` and `--appIconOriginal`.
-2. **Add a Run Script phase** in your target's **Build Phases** and paste one of the scripts below.
+2. **Add a Run Script phase** in your target's **Build Phases** and paste the script below.
 3. **Move the phase above Copy Bundle Resources** so the icon is generated before it's copied into the app.
 
 VersionIcon reads the icon entries from the `Contents.json` of both icon sets, so it works with modern single-size asset catalogs as well as legacy multi-size ones.
-
-**Swift Package Manager:**
 
 ```shell
 VERSION_ICON_PATH="${BUILD_DIR%/Build/*}/SourcePackages/checkouts/ios-version-icon/Bin"
@@ -235,17 +62,6 @@ if [ "${CONFIGURATION}" = "Release" ]; then
     "$VERSION_ICON_PATH/VersionIcon" --resources "$VERSION_ICON_PATH" --original
 else
     "$VERSION_ICON_PATH/VersionIcon" --resources "$VERSION_ICON_PATH" \
-        --ribbon Blue-TopRight.png --title Devel-TopRight.png --on-error warn
-fi
-```
-
-**CocoaPods:**
-
-```shell
-if [ "${CONFIGURATION}" = "Release" ]; then
-    "Pods/VersionIcon/Bin/VersionIcon" --resources "Pods/VersionIcon/Bin" --original
-else
-    "Pods/VersionIcon/Bin/VersionIcon" --resources "Pods/VersionIcon/Bin" \
         --ribbon Blue-TopRight.png --title Devel-TopRight.png --on-error warn
 fi
 ```
@@ -342,13 +158,73 @@ For version `1.2.0` and build `16`:
 
 | Parameter | Description | Default |
 | --- | --- | --- |
-| `--resources <path>` | Folder that contains `Ribbons` and `Titles`. With CocoaPods it falls back to `$PODS_ROOT/VersionIcon/Bin`. | CocoaPods only |
+| `--resources <path>` | The package's `Bin` folder, which contains `Ribbons` and `Titles`. | required |
 | `--appIcon <name>` | Icon set that VersionIcon writes to. | `AppIcon` |
 | `--appIconOriginal <name>` | Source icon set, which VersionIcon never changes. | `AppIconOriginal` |
 | `--outputAssetCatalog <path>` | Optional `.xcassets` folder for the generated icon. See [Generated asset catalog mode](#generated-asset-catalog-mode). | none |
 | `--original` | Copy the original icon without any overlay, typically for production builds. | off |
 | `--on-error <fail\|warn>` | `fail` stops the build when VersionIcon fails; `warn` prints the error and lets the build continue. | `fail` |
 | `--help` | Print all parameters. | |
+
+## Examples
+
+The icons below are from the JustFlip app (version `1.2.0`, build `16`). They all share these arguments:
+
+```shell
+COMMON=(--resources "$VERSION_ICON_PATH" --titleSize 0.17 \
+    --fillColor "#000000" --strokeColor "#FFFFFF" --strokeWidth 0.05)
+HORIZONTAL=(--horizontalTitlePosition 0.5 --verticalTitlePosition 0.2)
+ROTATED=(--titleRotation 18 --horizontalTitlePosition 0.35 --verticalTitlePosition 0.7)
+```
+
+Each icon adds its own ribbon, title, label layout and `--versionStyle`. For example, the first one is:
+
+```shell
+"$VERSION_ICON_PATH/VersionIcon" "${COMMON[@]}" "${HORIZONTAL[@]}" \
+    --ribbon Blue-TopRight.png --title Devel-TopRight.png --versionStyle dash
+```
+
+<table>
+  <tr>
+    <td align="center" valign="top" width="25%">
+      <img src="Documentation/Icons/dash.png" width="120" alt="dash" /><br />
+      <b><code>dash</code></b><br />
+      <sub><code>--ribbon Blue-TopRight.png</code><br /><code>--title Devel-TopRight.png</code><br /><code>${HORIZONTAL[@]}</code></sub>
+    </td>
+    <td align="center" valign="top" width="25%">
+      <img src="Documentation/Icons/parenthesis.png" width="120" alt="parenthesis" /><br />
+      <b><code>parenthesis</code></b><br />
+      <sub><code>--ribbon Gold-TopRight.png</code><br /><code>--title Staging-TopRight.png</code><br /><code>${HORIZONTAL[@]}</code></sub>
+    </td>
+    <td align="center" valign="top" width="25%">
+      <img src="Documentation/Icons/parenthesisTwoLines.png" width="120" alt="parenthesisTwoLines" /><br />
+      <b><code>parenthesisTwoLines</code></b><br />
+      <sub><code>--ribbon Red-TopRight.png</code><br /><code>--title Prod-TopRight.png</code><br /><code>${ROTATED[@]}</code></sub>
+    </td>
+    <td align="center" valign="top" width="25%">
+      <img src="Documentation/Icons/twoLines.png" width="120" alt="twoLines" /><br />
+      <b><code>twoLines</code></b><br />
+      <sub><code>--ribbon Green-TopRight.png</code><br /><code>--title Demo-TopRight.png</code><br /><code>${ROTATED[@]}</code></sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" valign="top" width="25%">
+      <img src="Documentation/Icons/versionOnly.png" width="120" alt="versionOnly" /><br />
+      <b><code>versionOnly</code></b><br />
+      <sub><code>--ribbon Purple-TopRight.png</code><br /><code>--title Beta-TopRight.png</code><br /><code>${ROTATED[@]}</code></sub>
+    </td>
+    <td align="center" valign="top" width="25%">
+      <img src="Documentation/Icons/buildOnly.png" width="120" alt="buildOnly" /><br />
+      <b><code>buildOnly</code></b><br />
+      <sub><code>--ribbon Cyan-TopRight.png</code><br /><code>--title MVP-TopRight.png</code><br /><code>${ROTATED[@]}</code></sub>
+    </td>
+    <td align="center" valign="top" width="25%">
+      <img src="Documentation/Icons/empty.png" width="120" alt="empty" /><br />
+      <b><code>empty</code></b><br />
+      <sub><code>--ribbon Blue-TopRight.png</code><br /><code>--title Devel-TopRight.png</code><br /><code>${ROTATED[@]}</code></sub>
+    </td>
+  </tr>
+</table>
 
 ## Debugging
 

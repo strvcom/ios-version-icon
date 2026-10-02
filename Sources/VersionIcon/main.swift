@@ -67,7 +67,7 @@ let versionStyle = moderator.add(Argument<String?>
 // AppSetup elements
 
 let resourcesPath = moderator.add(Argument<String?>
-    .optionWithValue("resources", name: "VersionIcon resources path", description: "Default path where Ribbons and Titles folders are located. It is not necessary to set when script is executed as a build phase in Xcode"))
+    .optionWithValue("resources", name: "VersionIcon resources path", description: "Path to the Bin folder where Ribbons and Titles folders are located."))
 
 let onError = moderator.add(Argument<String?>
     .optionWithValue("onError", name: "Error handling mode", description: "Possible values are fail and warn.").default("fail"))
@@ -93,7 +93,7 @@ do {
     }
     errorHandlingMode = convertedErrorHandlingMode
 
-    guard let resourcesPath = resourcesPath.value ?? main.env["PODS_ROOT"]?.appendingPathComponent(path: "VersionIcon/Bin") else {
+    guard let resourcesPath = resourcesPath.value else {
         throw ScriptError.argumentError(message: "You must specify the resources path using --resources parameter")
     }
 
