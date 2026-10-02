@@ -184,43 +184,87 @@ Each icon adds its own ribbon, title, label layout and `--versionStyle`. For exa
 
 <table>
   <tr>
-    <td align="center" valign="top" width="25%">
+    <td align="center" valign="top" width="33%">
       <img src="Documentation/Icons/dash.png" width="120" alt="dash" /><br />
-      <b><code>dash</code></b><br />
-      <sub><code>--ribbon Blue-TopRight.png</code><br /><code>--title Devel-TopRight.png</code><br /><code>${HORIZONTAL[@]}</code></sub>
-    </td>
-    <td align="center" valign="top" width="25%">
+      <b><code>dash</code></b>
+
+```shell
+--ribbon Blue-TopRight.png
+--title Devel-TopRight.png
+"${HORIZONTAL[@]}"
+```
+
+</td>
+    <td align="center" valign="top" width="33%">
       <img src="Documentation/Icons/parenthesis.png" width="120" alt="parenthesis" /><br />
-      <b><code>parenthesis</code></b><br />
-      <sub><code>--ribbon Gold-TopRight.png</code><br /><code>--title Staging-TopRight.png</code><br /><code>${HORIZONTAL[@]}</code></sub>
-    </td>
-    <td align="center" valign="top" width="25%">
+      <b><code>parenthesis</code></b>
+
+```shell
+--ribbon Gold-TopRight.png
+--title Staging-TopRight.png
+"${HORIZONTAL[@]}"
+```
+
+</td>
+    <td align="center" valign="top" width="33%">
       <img src="Documentation/Icons/parenthesisTwoLines.png" width="120" alt="parenthesisTwoLines" /><br />
-      <b><code>parenthesisTwoLines</code></b><br />
-      <sub><code>--ribbon Red-TopRight.png</code><br /><code>--title Prod-TopRight.png</code><br /><code>${ROTATED[@]}</code></sub>
-    </td>
-    <td align="center" valign="top" width="25%">
-      <img src="Documentation/Icons/twoLines.png" width="120" alt="twoLines" /><br />
-      <b><code>twoLines</code></b><br />
-      <sub><code>--ribbon Green-TopRight.png</code><br /><code>--title Demo-TopRight.png</code><br /><code>${ROTATED[@]}</code></sub>
-    </td>
+      <b><code>parenthesisTwoLines</code></b>
+
+```shell
+--ribbon Red-TopRight.png
+--title Prod-TopRight.png
+"${ROTATED[@]}"
+```
+
+</td>
   </tr>
   <tr>
-    <td align="center" valign="top" width="25%">
+    <td align="center" valign="top" width="33%">
+      <img src="Documentation/Icons/twoLines.png" width="120" alt="twoLines" /><br />
+      <b><code>twoLines</code></b>
+
+```shell
+--ribbon Green-TopRight.png
+--title Demo-TopRight.png
+"${ROTATED[@]}"
+```
+
+</td>
+    <td align="center" valign="top" width="33%">
       <img src="Documentation/Icons/versionOnly.png" width="120" alt="versionOnly" /><br />
-      <b><code>versionOnly</code></b><br />
-      <sub><code>--ribbon Purple-TopRight.png</code><br /><code>--title Beta-TopRight.png</code><br /><code>${ROTATED[@]}</code></sub>
-    </td>
-    <td align="center" valign="top" width="25%">
+      <b><code>versionOnly</code></b>
+
+```shell
+--ribbon Purple-TopRight.png
+--title Beta-TopRight.png
+"${ROTATED[@]}"
+```
+
+</td>
+    <td align="center" valign="top" width="33%">
       <img src="Documentation/Icons/buildOnly.png" width="120" alt="buildOnly" /><br />
-      <b><code>buildOnly</code></b><br />
-      <sub><code>--ribbon Cyan-TopRight.png</code><br /><code>--title MVP-TopRight.png</code><br /><code>${ROTATED[@]}</code></sub>
-    </td>
-    <td align="center" valign="top" width="25%">
+      <b><code>buildOnly</code></b>
+
+```shell
+--ribbon Cyan-TopRight.png
+--title MVP-TopRight.png
+"${ROTATED[@]}"
+```
+
+</td>
+  </tr>
+  <tr>
+    <td align="center" valign="top" width="33%">
       <img src="Documentation/Icons/empty.png" width="120" alt="empty" /><br />
-      <b><code>empty</code></b><br />
-      <sub><code>--ribbon Blue-TopRight.png</code><br /><code>--title Devel-TopRight.png</code><br /><code>${ROTATED[@]}</code></sub>
-    </td>
+      <b><code>empty</code></b>
+
+```shell
+--ribbon Blue-TopRight.png
+--title Devel-TopRight.png
+"${ROTATED[@]}"
+```
+
+</td>
   </tr>
 </table>
 
