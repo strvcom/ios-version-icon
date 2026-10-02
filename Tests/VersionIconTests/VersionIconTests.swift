@@ -157,7 +157,8 @@ final class VersionIconTests: XCTestCase {
         defer { try? FileManager.default.removeItem(at: projectRoot) }
 
         let appIconURL = projectRoot.appendingPathComponent("AppIcon.appiconset")
-        let originalData = try ["Icon.png", "Icon-Dark.png", "Icon-Tinted.png"].map {
+        let fileNames = appearanceIconImages.map(\.filename)
+        let originalData = try fileNames.map {
             try Data(contentsOf: appIconURL.appendingPathComponent($0))
         }
 
@@ -178,7 +179,7 @@ final class VersionIconTests: XCTestCase {
         XCTAssertTrue(result.stdout.contains("Matched icon entries: 3"), result.stdout)
         XCTAssertFalse(result.stdout.contains("Skipping"), result.stdout)
 
-        for (fileName, original) in zip(["Icon.png", "Icon-Dark.png", "Icon-Tinted.png"], originalData) {
+        for (fileName, original) in zip(fileNames, originalData) {
             let updated = try Data(contentsOf: appIconURL.appendingPathComponent(fileName))
             XCTAssertNotEqual(updated, original, fileName)
         }

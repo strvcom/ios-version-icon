@@ -39,7 +39,6 @@ struct ImageInfo: Codable {
     }
 }
 
-/// Appearance variant of an icon entry, e.g. `luminosity=dark` or `luminosity=tinted`
 struct ImageAppearance: Codable {
     var appearance: String
     var value: String
