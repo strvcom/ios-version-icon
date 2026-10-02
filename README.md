@@ -1,142 +1,270 @@
-[![Version](https://img.shields.io/cocoapods/v/VersionIcon.svg?style=flat)](https://cocoapods.org/pods/VersionIcon)
-[![License](https://img.shields.io/cocoapods/l/VersionIcon.svg?style=flat)](https://cocoapods.org/pods/VersionIcon)
+[![Release](https://img.shields.io/github/v/tag/strvcom/ios-version-icon?label=release&style=flat)](https://github.com/strvcom/ios-version-icon/tags)
+[![License](https://img.shields.io/github/license/strvcom/ios-version-icon?style=flat)](LICENSE)
+[![SPM compatible](https://img.shields.io/badge/SPM-compatible-brightgreen.svg?style=flat)](https://swift.org/package-manager/)
 
 <p align="center">
-    <img src="https://i.ibb.co/pBJbxxsH/App-Icon60x60-2x.png" width="180" max-width="180" alt="VersionIcon" />
+    <img src="Documentation/Icons/parenthesisTwoLines.png" width="180" alt="App icon with a red PROD ribbon and a 1.2.0 (16) version label" />
 </p>
 
 # VersionIcon
 
-A simple tool that can add an icon overlay with app version to your iOS app icon. Overlays can include the ribbon with app version (_Dev_, _Staging_, _Production_, _MVP_...) and/or version number. The icon overlays can be customized many ways. You can also use your own graphic resources. The VersionIcon tool is distributed in binary form, so it is independent on your project setup.
+VersionIcon adds an overlay to your iOS app icon showing the build variant and the app version. The overlay can include a ribbon with the build variant (_Devel_, _Staging_, _Production_…), the version and build number, or both. You can customize the overlay in many ways or supply your own graphics. VersionIcon ships as a prebuilt binary, so it doesn't depend on how your project is set up.
+
+## Contents
 
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Usage](#usage)
+  - [Full example](#full-example)
+  - [Generated asset catalog mode](#generated-asset-catalog-mode)
+- [Parameters](#parameters)
+- [Examples](#examples)
+- [Debugging](#debugging)
+- [Contributing](#contributing)
+- [Author](#author)
 - [License](#license)
 
 ## Requirements
 
-- Xcode 10.0+
+- macOS 10.15+
+- Xcode 12+ (Swift 5.2+)
+- An iOS app whose app icon lives in an asset catalog
 
 ## Installation
 
-### Cocoapods
+VersionIcon is distributed as a Swift package. Add the package to your project. In Xcode, choose **File › Add Package Dependencies…** and enter the URL, or add it in `Package.swift`:
 
-[CocoaPods](http://cocoapods.org) is a dependency manager for Cocoa projects. You can install it with the following command:
-
-```bash
-$ gem install cocoapods
+```swift
+.package(url: "https://github.com/strvcom/ios-version-icon.git", from: "1.2.3")
 ```
 
-To integrate VersionIcon into your Xcode project using CocoaPods, specify it in your `Podfile`:
+The package ships a prebuilt `VersionIcon` binary and its resources in the `Bin` folder of the package checkout. Point your Run Script phase at that folder:
 
-```ruby
-pod 'VersionIcon', '~> 1.0.8'
-```
-
-Then, run the following command:
-
-```bash
-$ pod install
-```
+| Setup | `Bin` folder path in the Run Script phase |
+| --- | --- |
+| Xcode package dependency | `"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/ios-version-icon/Bin"` |
+| [Tuist](https://tuist.io) (`Tuist/Package.swift`) | `"${SRCROOT}/../Tuist/.build/checkouts/ios-version-icon/Bin"` |
 
 ## Usage
 
-* Make a duplicate of your app icon resource in asset catalog - let's have for example _AppIcon_ and _AppIconOriginal_. The copy is used as a backup. Production builds typically have no icon overlays. (if your project contains icon resource with other than this default name, you need to specify it using `--appIcon` and/or `--appIconOriginal` parameter.
-* VersionIcon discovers matching icon entries directly from both `Contents.json` files, so it works with modern asset catalogs instead of assuming a fixed list of legacy iOS sizes.
-* Create a new Run Script Phase in Build Settings > Build Phases in your app
-* Use this shell script:
+1. **Duplicate your app icon** in the asset catalog, so you have `AppIcon` and `AppIconOriginal`:
+   - `AppIconOriginal` is the clean source image. VersionIcon only reads it and never changes it.
+   - `AppIcon` stays the target's app icon (**Primary App Icon Set Name**). VersionIcon overwrites its images on every build: with the overlay for development builds, or with the clean original when you pass `--original` for production builds.
+
+   Keep the same entries (size, scale, idiom, platform and appearance, such as Dark and Tinted variants) in both sets. VersionIcon skips any entry that's in only one of them and prints a warning. If your icon sets have other names, pass them with `--appIcon` and `--appIconOriginal`. The names must be unique in the project, because VersionIcon uses the first `.appiconset` folder it finds with each name.
+2. **Add a Run Script phase** in your target's **Build Phases** and paste the script below.
+3. **Move the phase above Copy Bundle Resources** so the icon is generated before it's copied into the app.
+
+VersionIcon reads the icon entries from the `Contents.json` of both icon sets, so it works with modern single-size asset catalogs as well as legacy multi-size ones.
+
 ```shell
+VERSION_ICON_PATH="${BUILD_DIR%/Build/*}/SourcePackages/checkouts/ios-version-icon/Bin"
+
 if [ "${CONFIGURATION}" = "Release" ]; then
-    "Pods/VersionIcon/Bin/VersionIcon" --resources "Pods/VersionIcon/Bin" --original
+    "$VERSION_ICON_PATH/VersionIcon" --resources "$VERSION_ICON_PATH" --original
 else
-    "Pods/VersionIcon/Bin/VersionIcon" --ribbon Blue-TopRight.png --title Devel-TopRight.png --resources "Pods/VersionIcon/Bin" --strokeWidth 0.07 --on-error warn
+    "$VERSION_ICON_PATH/VersionIcon" --resources "$VERSION_ICON_PATH" \
+        --ribbon Blue-TopRight.png --title Devel-TopRight.png --on-error warn
 fi
 ```
-* If your projects contains different configuration names, you'll need to adjust the script.
-* Move this script phase above the Copy Bundle Resources phase.
-* If you need to use your own ribbon or title asset, you can specify full path to image file
+
+If your project uses other configuration names, adjust the conditions. To use your own ribbon or title artwork, pass an absolute path to a `.png` file.
+
+### Full example
+
+This is the setup used by the JustFlip app shown above, which installs VersionIcon through Tuist. It uses one ribbon per environment, a rotated two-line version label, and no overlay on the App Store build:
+
+```shell
+VERSION_ICON_PATH="$SRCROOT/../Tuist/.build/checkouts/ios-version-icon/Bin"
+OUTPUT_ASSET_CATALOG="$SRCROOT/JustFlip/Application/Resources/VersionIconGenerated.xcassets"
+COMMON_ARGS=(--appIcon "AppIcon-${CONFIGURATION}" --appIconOriginal AppIconOriginal \
+    --outputAssetCatalog "$OUTPUT_ASSET_CATALOG" --resources "$VERSION_ICON_PATH")
+STYLE_ARGS=(--titleSize 0.17 --fillColor "#000000" --strokeColor "#FFFFFF" --strokeWidth 0.05 \
+    --titleRotation 18 --horizontalTitlePosition 0.35 --verticalTitlePosition 0.7 \
+    --versionStyle parenthesisTwoLines)
+
+case "${CONFIGURATION}" in
+    "Production-Release")
+        "$VERSION_ICON_PATH/VersionIcon" "${COMMON_ARGS[@]}" --original ;;
+    "Production-Debug")
+        "$VERSION_ICON_PATH/VersionIcon" "${COMMON_ARGS[@]}" --ribbon Red-TopRight.png --title Prod-TopRight.png "${STYLE_ARGS[@]}" ;;
+    "Staging-"*)
+        "$VERSION_ICON_PATH/VersionIcon" "${COMMON_ARGS[@]}" --ribbon Gold-TopRight.png --title Staging-TopRight.png "${STYLE_ARGS[@]}" ;;
+    "Development-"*)
+        "$VERSION_ICON_PATH/VersionIcon" "${COMMON_ARGS[@]}" --ribbon Blue-TopRight.png --title Devel-TopRight.png "${STYLE_ARGS[@]}" ;;
+    *)
+        echo "error: VersionIcon does not recognize CONFIGURATION '${CONFIGURATION}'"
+        exit 1 ;;
+esac
+```
 
 ### Generated asset catalog mode
 
-By default, VersionIcon keeps the historical behavior and writes generated images into the `--appIcon` asset. For new projects, use `--outputAssetCatalog` to keep source assets immutable. The project still supplies the usual `AppIconOriginal` asset as the source image; the generated catalog is output managed by VersionIcon and does not require manual maintenance. Set `VERSION_ICON_BIN` to the VersionIcon executable built with Swift Package Manager (for example, `.build/release/VersionIcon`) and `VERSION_ICON_RESOURCES` to the package's `Bin` directory:
+By default, VersionIcon writes the generated images into the `--appIcon` icon set in your sources, so every build changes tracked files. For new projects, add `--outputAssetCatalog` so your source assets stay unchanged:
 
 ```shell
-"${VERSION_ICON_BIN}" \
+"$VERSION_ICON_PATH/VersionIcon" \
     --appIcon "AppIcon-${CONFIGURATION}" \
     --appIconOriginal AppIconOriginal \
     --outputAssetCatalog "${SRCROOT}/VersionIconGenerated.xcassets" \
-    --resources "${VERSION_ICON_RESOURCES}" \
+    --resources "$VERSION_ICON_PATH" \
     --ribbon Blue-TopRight.png \
     --title Devel-TopRight.png \
     --on-error warn
 ```
 
-Add `VersionIconGenerated.xcassets` to the target's Copy Bundle Resources phase, keep the VersionIcon Run Script phase before it, and set the target's Primary App Icon Set Name to `AppIcon-${CONFIGURATION}`. VersionIcon creates the catalog and app-icon sets on demand; the generated catalog is a build artifact and should be ignored by source control. Using a distinct output app icon name per configuration prevents switching configurations from rewriting another configuration's generated files.
+- VersionIcon creates the catalog and its icon sets as needed. The output catalog must be separate from the one that holds `AppIconOriginal`.
+- Add `VersionIconGenerated.xcassets` to the target's **Copy Bundle Resources** phase, and keep the VersionIcon phase before it.
+- Set the target's **Primary App Icon Set Name** (`ASSETCATALOG_COMPILER_APPICON_NAME`) to `AppIcon-$(CONFIGURATION)`. Using a separate icon name per configuration means switching configurations doesn't overwrite another configuration's generated files.
+- The generated catalog is a build artifact. Add `VersionIconGenerated.xcassets/*.appiconset/` to `.gitignore`.
 
 ## Parameters
-#### Ribbon Style
-* `--ribbon <Icon ribbon>`
-    * Icon ribbon. The folder Ribbons contains variety of ribbons .png files with different colors and positions. You can also specify the absolute path to your custom .png.
-    
-* `--title <Icon ribbon title>`
-    * The title on ribbon. You can choose from a several predefined titles in different positions in Titles folder. Or you can provide absolute path to your custom ribbon title image. (Ribbon titles are images with transparency, custom text is not supported yet)
 
-#### Icon version Title
-* `--fillColor <Title fill color>`
-    * The fill color of version title in `#xxxxxx` hexa format. Default fill color is white ('#FFFFFF').
-    
-* `--strokeColor <Title stroke color>`
-    * The stroke color of version title in `#xxxxxx` hexa format. Default stroke color is black ('#000000').
-    
-* `--strokeWidth <Version Title Stroke Width>`
-    * The title stroke width related to icon width. Default value of stroke width is '0.03'.
-    
-* `--font <Version label font>`
-    * Font used for version title. Default font is 'Impact'.
-    
-* `--titleSize <Version Title Size Ratio>`
-    * Version title size related to icon width. Default title size is '0.2'.
-    
-* `--horizontalTitlePosition <Version Title Size Ratio>`
-    * Version title position related to icon width. Default = '0.5'.
-    
-* `--verticalTitlePosition <Version Title Size Ratio>`
-    * Version title position related to icon width. Default = '0.2'.
+Run `VersionIcon --help` for the full list.
 
-* `--titleRotation <Version Title Rotation>`
-    * Version title rotation in degrees. Allowed range is `-180...180`. Default = `0`.
-      
-* `--titleAlignment <Version Title Text Alignment>`
-    * Possible values are left, center, right. Default = 'center'.
-    
-* `--versionStyle <The format of version label>`
-    * Possible values are _dash_, _parenthesis_, _parenthesisTwoLines, _twoLines_, _versionOnly_, _buildOnly_ and _empty_. Default = 'dash'.
+#### Ribbon
 
-#### Script Setup
-* `--resources <VersionIcon resources path>`
-    * Default path where Ribbons and Titles folders are located. It is not necessary to set when script is executed as a build phase in Xcode
+| Parameter | Description | Default |
+| --- | --- | --- |
+| `--ribbon <file>` | Ribbon image. `Bin/Ribbons` contains ribbons in six colors (`Blue`, `Cyan`, `Gold`, `Green`, `Purple`, `Red`) for every corner (`TopLeft`, `TopRight`, `BottomLeft`, `BottomRight`). You can also pass an absolute path to your own `.png`. | none |
+| `--title <file>` | Title image placed on the ribbon. `Bin/Titles` has `Alpha`, `Beta`, `Debug`, `Demo`, `Dev`, `Devel`, `MVP`, `Prod` and `Staging` for every corner, e.g. `Devel-TopRight.png`. You can also pass an absolute path to your own `.png`. Titles are transparent images; custom text isn't supported yet. | none |
 
-* `--outputAssetCatalog <Generated .xcassets path>`
-    * Optional output asset catalog for generated icons. When set, VersionIcon creates the `--appIcon` app icon set inside this catalog and never modifies an app icon set in the project sources.
+#### Version label
 
-* `--on-error <fail|warn>`
-    * Controls whether VersionIcon should fail the build (`fail`, default) or print the error and continue (`warn`).
-    
-* `--original`
-    * If you need to use just original icon without any modifications, use this parameter. The production app typically has no icon overlay.
-    
-* `--help`
-    * Full description of parameters is available when you run VersionIcon with `--help` parameter
+| Parameter | Description | Default |
+| --- | --- | --- |
+| `--versionStyle <style>` | Format of the version label: `dash` (`1.2.0 - 16`), `parenthesis`, `parenthesisTwoLines`, `twoLines`, `versionOnly`, `buildOnly` or `empty`. See [Examples](#examples). | `dash` |
+| `--fillColor <#RRGGBB>` | Text fill color. | `#FFFFFF` |
+| `--strokeColor <#RRGGBB>` | Text stroke color. | `#000000` |
+| `--strokeWidth <ratio>` | Stroke width as a fraction of the icon width. | `0.03` |
+| `--font <name>` | Font of the label. | `Impact` |
+| `--titleSize <ratio>` | Text size as a fraction of the icon width. | `0.25` |
+| `--horizontalTitlePosition <ratio>` | Horizontal center of the label as a fraction of the icon width, measured from the left edge. | `0.5` |
+| `--verticalTitlePosition <ratio>` | Vertical center of the label as a fraction of the icon height, measured from the bottom edge. | `0.2` |
+| `--titleRotation <degrees>` | Label rotation, from `-180` to `180`. | `0` |
+| `--titleAlignment <alignment>` | `left`, `center` or `right`. | `center` |
+
+#### Script setup
+
+| Parameter | Description | Default |
+| --- | --- | --- |
+| `--resources <path>` | The package's `Bin` folder, which contains `Ribbons` and `Titles`. | required |
+| `--appIcon <name>` | Icon set that VersionIcon writes to. By default it must already exist in the project and be the target's app icon. With `--outputAssetCatalog`, VersionIcon creates it inside that catalog. | `AppIcon` |
+| `--appIconOriginal <name>` | Source icon set with the clean images. VersionIcon only reads it. | `AppIconOriginal` |
+| `--outputAssetCatalog <path>` | Optional `.xcassets` folder for the generated icon. See [Generated asset catalog mode](#generated-asset-catalog-mode). | none |
+| `--original` | Copy the clean images from `--appIconOriginal` into `--appIcon` without any overlay, typically for production builds. | off |
+| `--on-error <fail\|warn>` | `fail` stops the build when VersionIcon fails; `warn` prints the error and lets the build continue. | `fail` |
+| `--help` | Print all parameters. | |
+
+## Examples
+
+The icons below are from the JustFlip app (version `1.2.0`, build `16`). They all share these arguments:
+
+```shell
+COMMON=(--resources "$VERSION_ICON_PATH" --titleSize 0.17 \
+    --fillColor "#000000" --strokeColor "#FFFFFF" --strokeWidth 0.05)
+HORIZONTAL=(--horizontalTitlePosition 0.5 --verticalTitlePosition 0.2)
+ROTATED=(--titleRotation 18 --horizontalTitlePosition 0.35 --verticalTitlePosition 0.7)
+```
+
+Each icon adds its own ribbon, title, label layout and `--versionStyle`. For example, the first one is:
+
+```shell
+"$VERSION_ICON_PATH/VersionIcon" "${COMMON[@]}" "${HORIZONTAL[@]}" \
+    --ribbon Blue-TopRight.png --title Devel-TopRight.png --versionStyle dash
+```
+
+<table>
+  <tr>
+    <td valign="top">
+      <p align="center"><img src="Documentation/Icons/dash.png" width="120" alt="dash" /><br /><b><code>dash</code></b></p>
+
+```shell
+--ribbon Blue-TopRight.png
+--title Devel-TopRight.png
+"${HORIZONTAL[@]}"
+```
+
+</td>
+    <td valign="top">
+      <p align="center"><img src="Documentation/Icons/parenthesis.png" width="120" alt="parenthesis" /><br /><b><code>parenthesis</code></b></p>
+
+```shell
+--ribbon Gold-TopRight.png
+--title Staging-TopRight.png
+"${HORIZONTAL[@]}"
+```
+
+</td>
+  </tr>
+  <tr>
+    <td valign="top">
+      <p align="center"><img src="Documentation/Icons/parenthesisTwoLines.png" width="120" alt="parenthesisTwoLines" /><br /><b><code>parenthesisTwoLines</code></b></p>
+
+```shell
+--ribbon Red-TopRight.png
+--title Prod-TopRight.png
+"${ROTATED[@]}"
+```
+
+</td>
+    <td valign="top">
+      <p align="center"><img src="Documentation/Icons/twoLines.png" width="120" alt="twoLines" /><br /><b><code>twoLines</code></b></p>
+
+```shell
+--ribbon Green-TopRight.png
+--title Demo-TopRight.png
+"${ROTATED[@]}"
+```
+
+</td>
+  </tr>
+  <tr>
+    <td valign="top">
+      <p align="center"><img src="Documentation/Icons/versionOnly.png" width="120" alt="versionOnly" /><br /><b><code>versionOnly</code></b></p>
+
+```shell
+--ribbon Purple-TopRight.png
+--title Beta-TopRight.png
+"${ROTATED[@]}"
+```
+
+</td>
+    <td valign="top">
+      <p align="center"><img src="Documentation/Icons/buildOnly.png" width="120" alt="buildOnly" /><br /><b><code>buildOnly</code></b></p>
+
+```shell
+--ribbon Cyan-TopRight.png
+--title MVP-TopRight.png
+"${ROTATED[@]}"
+```
+
+</td>
+  </tr>
+  <tr>
+    <td valign="top">
+      <p align="center"><img src="Documentation/Icons/empty.png" width="120" alt="empty" /><br /><b><code>empty</code></b></p>
+
+```shell
+--ribbon Blue-TopRight.png
+--title Devel-TopRight.png
+"${ROTATED[@]}"
+```
+
+</td>
+  </tr>
+</table>
 
 ## Debugging
 
-If you want to modify the behavior and debug VersionIcon in context of your project, you need a special setup of the scheme. The screenshot shows the commandline arguments passed on launch. These parameters can be copied from the existing VersionIcon call build phase. And three environment variables that are necessary to propagate. The values of these environment are visible in the Xcode's Report navigator. All checkboxes should be on.
+To change VersionIcon and debug it against your own project, set up the VersionIcon scheme like this:
+
+- **Arguments Passed On Launch:** copy the parameters from your project's VersionIcon build phase.
+- **Environment Variables:** set `SRCROOT`, `PROJECT_DIR` and `INFOPLIST_FILE`. You can find their values in the build log in Xcode's Report navigator.
 
 <p align="center">
-    <img src="https://i.ibb.co/5XC6fT9p/Scheme-Setup.png" width="936" max-width="534" alt="Scheme" />
+    <img src="Documentation/SchemeSetup.png" width="720" alt="Scheme setup" />
 </p>
-
 
 ## Contributing
 
@@ -144,8 +272,8 @@ Issues and pull requests are welcome!
 
 ## Author
 
-* Daniel Čech [GitHub](https://github.com/DanielCech) 
+Daniel Čech ([GitHub](https://github.com/DanielCech))
 
 ## License
 
-VersionIcon is released under the MIT license. See [LICENSE](https://github.com/DanielCech/DeallocTests/blob/master/LICENSE) for details.
+VersionIcon is released under the MIT license. See [LICENSE](LICENSE) for details.
