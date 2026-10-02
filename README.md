@@ -47,7 +47,11 @@ The package ships a prebuilt `VersionIcon` binary and its resources in the `Bin`
 
 ## Usage
 
-1. **Duplicate your app icon** in the asset catalog, so you have for example `AppIcon` and `AppIconOriginal`. VersionIcon uses the copy as the untouched source, and production builds usually ship it without any overlay. If your icon sets have other names, pass them with `--appIcon` and `--appIconOriginal`.
+1. **Duplicate your app icon** in the asset catalog, so you have `AppIcon` and `AppIconOriginal`:
+   - `AppIconOriginal` is the clean source image. VersionIcon only reads it and never changes it.
+   - `AppIcon` stays the target's app icon (**Primary App Icon Set Name**). VersionIcon overwrites its images on every build: with the overlay for development builds, or with the clean original when you pass `--original` for production builds.
+
+   Keep the same entries (size, scale, idiom, platform and appearance, such as Dark and Tinted variants) in both sets. VersionIcon skips any entry that's in only one of them and prints a warning. If your icon sets have other names, pass them with `--appIcon` and `--appIconOriginal`. The names must be unique in the project, because VersionIcon uses the first `.appiconset` folder it finds with each name.
 2. **Add a Run Script phase** in your target's **Build Phases** and paste the script below.
 3. **Move the phase above Copy Bundle Resources** so the icon is generated before it's copied into the app.
 
@@ -129,7 +133,7 @@ Run `VersionIcon --help` for the full list.
 
 | Parameter | Description | Default |
 | --- | --- | --- |
-| `--versionStyle <style>` | Format of the version label (see the table below). | `dash` |
+| `--versionStyle <style>` | Format of the version label: `dash` (`1.2.0 - 16`), `parenthesis`, `parenthesisTwoLines`, `twoLines`, `versionOnly`, `buildOnly` or `empty`. See [Examples](#examples). | `dash` |
 | `--fillColor <#RRGGBB>` | Text fill color. | `#FFFFFF` |
 | `--strokeColor <#RRGGBB>` | Text stroke color. | `#000000` |
 | `--strokeWidth <ratio>` | Stroke width as a fraction of the icon width. | `0.03` |
@@ -140,27 +144,15 @@ Run `VersionIcon --help` for the full list.
 | `--titleRotation <degrees>` | Label rotation, from `-180` to `180`. | `0` |
 | `--titleAlignment <alignment>` | `left`, `center` or `right`. | `center` |
 
-For version `1.2.0` and build `16`:
-
-| `--versionStyle` | Label |
-| --- | --- |
-| `dash` | `1.2.0 - 16` |
-| `parenthesis` | `1.2.0(16)` |
-| `parenthesisTwoLines` | `1.2.0`<br />`(16)` |
-| `twoLines` | `1.2.0`<br />`16` |
-| `versionOnly` | `1.2.0` |
-| `buildOnly` | `16` |
-| `empty` | no label |
-
 #### Script setup
 
 | Parameter | Description | Default |
 | --- | --- | --- |
 | `--resources <path>` | The package's `Bin` folder, which contains `Ribbons` and `Titles`. | required |
-| `--appIcon <name>` | Icon set that VersionIcon writes to. | `AppIcon` |
-| `--appIconOriginal <name>` | Source icon set, which VersionIcon never changes. | `AppIconOriginal` |
+| `--appIcon <name>` | Icon set that VersionIcon writes to. By default it must already exist in the project and be the target's app icon. With `--outputAssetCatalog`, VersionIcon creates it inside that catalog. | `AppIcon` |
+| `--appIconOriginal <name>` | Source icon set with the clean images. VersionIcon only reads it. | `AppIconOriginal` |
 | `--outputAssetCatalog <path>` | Optional `.xcassets` folder for the generated icon. See [Generated asset catalog mode](#generated-asset-catalog-mode). | none |
-| `--original` | Copy the original icon without any overlay, typically for production builds. | off |
+| `--original` | Copy the clean images from `--appIconOriginal` into `--appIcon` without any overlay, typically for production builds. | off |
 | `--on-error <fail\|warn>` | `fail` stops the build when VersionIcon fails; `warn` prints the error and lets the build continue. | `fail` |
 | `--help` | Print all parameters. | |
 

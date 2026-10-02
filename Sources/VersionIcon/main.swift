@@ -175,7 +175,7 @@ do {
         exit(0)
     }
 
-    exit(Int32(error._code))
+    exit(1)
 }
 
 private func normalizedArguments(_ arguments: [String]) -> [String] {
