@@ -2,15 +2,15 @@
 [![License](https://img.shields.io/github/license/strvcom/ios-version-icon?style=flat)](LICENSE)
 [![SPM compatible](https://img.shields.io/badge/SPM-compatible-brightgreen.svg?style=flat)](https://swift.org/package-manager/)
 
-# VersionIcon
-
-VersionIcon adds an overlay to your iOS app icon showing the build variant and the app version. The overlay can include a ribbon with the build variant (_Devel_, _Staging_, _Production_…), the version and build number, or both. You can customize the overlay in many ways or supply your own graphics. VersionIcon ships as a prebuilt binary, so it doesn't depend on how your project is set up.
-
 <p align="center">
     <img src="Documentation/Icons/parenthesisTwoLines.png" width="180" alt="App icon with a red PROD ribbon and a 1.2.0 (16) version label" />
 </p>
 
 <p align="center"><sub>More ribbons and label styles are in <a href="#examples">Examples</a>.</sub></p>
+
+# VersionIcon
+
+VersionIcon adds an overlay to your iOS app icon showing the build variant and the app version. The overlay can include a ribbon with the build variant (_Devel_, _Staging_, _Production_…), the version and build number, or both. You can customize the overlay in many ways or supply your own graphics. VersionIcon ships as a prebuilt binary, so it doesn't depend on how your project is set up.
 
 ## Contents
 
