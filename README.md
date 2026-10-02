@@ -184,9 +184,8 @@ Each icon adds its own ribbon, title, label layout and `--versionStyle`. For exa
 
 <table>
   <tr>
-    <td align="center" valign="top" width="33%">
-      <img src="Documentation/Icons/dash.png" width="120" alt="dash" /><br />
-      <b><code>dash</code></b>
+    <td valign="top">
+      <p align="center"><img src="Documentation/Icons/dash.png" width="120" alt="dash" /><br /><b><code>dash</code></b></p>
 
 ```shell
 --ribbon Blue-TopRight.png
@@ -195,9 +194,8 @@ Each icon adds its own ribbon, title, label layout and `--versionStyle`. For exa
 ```
 
 </td>
-    <td align="center" valign="top" width="33%">
-      <img src="Documentation/Icons/parenthesis.png" width="120" alt="parenthesis" /><br />
-      <b><code>parenthesis</code></b>
+    <td valign="top">
+      <p align="center"><img src="Documentation/Icons/parenthesis.png" width="120" alt="parenthesis" /><br /><b><code>parenthesis</code></b></p>
 
 ```shell
 --ribbon Gold-TopRight.png
@@ -206,9 +204,10 @@ Each icon adds its own ribbon, title, label layout and `--versionStyle`. For exa
 ```
 
 </td>
-    <td align="center" valign="top" width="33%">
-      <img src="Documentation/Icons/parenthesisTwoLines.png" width="120" alt="parenthesisTwoLines" /><br />
-      <b><code>parenthesisTwoLines</code></b>
+  </tr>
+  <tr>
+    <td valign="top">
+      <p align="center"><img src="Documentation/Icons/parenthesisTwoLines.png" width="120" alt="parenthesisTwoLines" /><br /><b><code>parenthesisTwoLines</code></b></p>
 
 ```shell
 --ribbon Red-TopRight.png
@@ -217,11 +216,8 @@ Each icon adds its own ribbon, title, label layout and `--versionStyle`. For exa
 ```
 
 </td>
-  </tr>
-  <tr>
-    <td align="center" valign="top" width="33%">
-      <img src="Documentation/Icons/twoLines.png" width="120" alt="twoLines" /><br />
-      <b><code>twoLines</code></b>
+    <td valign="top">
+      <p align="center"><img src="Documentation/Icons/twoLines.png" width="120" alt="twoLines" /><br /><b><code>twoLines</code></b></p>
 
 ```shell
 --ribbon Green-TopRight.png
@@ -230,9 +226,10 @@ Each icon adds its own ribbon, title, label layout and `--versionStyle`. For exa
 ```
 
 </td>
-    <td align="center" valign="top" width="33%">
-      <img src="Documentation/Icons/versionOnly.png" width="120" alt="versionOnly" /><br />
-      <b><code>versionOnly</code></b>
+  </tr>
+  <tr>
+    <td valign="top">
+      <p align="center"><img src="Documentation/Icons/versionOnly.png" width="120" alt="versionOnly" /><br /><b><code>versionOnly</code></b></p>
 
 ```shell
 --ribbon Purple-TopRight.png
@@ -241,9 +238,8 @@ Each icon adds its own ribbon, title, label layout and `--versionStyle`. For exa
 ```
 
 </td>
-    <td align="center" valign="top" width="33%">
-      <img src="Documentation/Icons/buildOnly.png" width="120" alt="buildOnly" /><br />
-      <b><code>buildOnly</code></b>
+    <td valign="top">
+      <p align="center"><img src="Documentation/Icons/buildOnly.png" width="120" alt="buildOnly" /><br /><b><code>buildOnly</code></b></p>
 
 ```shell
 --ribbon Cyan-TopRight.png
@@ -254,9 +250,8 @@ Each icon adds its own ribbon, title, label layout and `--versionStyle`. For exa
 </td>
   </tr>
   <tr>
-    <td align="center" valign="top" width="33%">
-      <img src="Documentation/Icons/empty.png" width="120" alt="empty" /><br />
-      <b><code>empty</code></b>
+    <td valign="top">
+      <p align="center"><img src="Documentation/Icons/empty.png" width="120" alt="empty" /><br /><b><code>empty</code></b></p>
 
 ```shell
 --ribbon Blue-TopRight.png
