@@ -53,7 +53,7 @@ The package ships a prebuilt `VersionIcon` binary and its resources in the `Bin`
 
    Keep the same entries (size, scale, idiom, platform and appearance, such as Dark and Tinted variants) in both sets. VersionIcon skips any entry that's in only one of them and prints a warning. If your icon sets have other names, pass them with `--appIcon` and `--appIconOriginal`. The names must be unique in the project, because VersionIcon uses the first `.appiconset` folder it finds with each name.
 2. **Add a Run Script phase** in your target's **Build Phases** and paste the script below.
-3. **Move the phase above Copy Bundle Resources** so the icon is generated before it's copied into the app.
+3. **Move the Run Script phase** from step 2 before the Copy Bundle Resources phase. The script must run before the icon is copied into the app.
 
 VersionIcon reads the icon entries from the `Contents.json` of both icon sets, so it works with modern single-size asset catalogs as well as legacy multi-size ones.
 
