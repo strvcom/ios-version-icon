@@ -26,8 +26,8 @@ VersionIcon adds an overlay to your iOS app icon showing the build variant and t
 
 ## Requirements
 
-- macOS 10.15+
-- Xcode 12+ (Swift 5.2+)
+- macOS 14+ on Apple silicon (the prebuilt binary is arm64-only)
+- Xcode 16+ (Swift 6 toolchain)
 - An iOS app whose app icon lives in an asset catalog
 
 ## Installation
@@ -47,28 +47,28 @@ The package ships a prebuilt `VersionIcon` binary and its resources in the `Bin`
 
 ## Usage
 
-1. **Duplicate your app icon** in the asset catalog and name them `AppIcon` and `AppIconOriginal`.:
+1. **Duplicate your app icon** in the asset catalog and name the two sets `AppIcon` and `AppIconOriginal`:
    - `AppIconOriginal` is the clean source image. VersionIcon only reads it and never changes it.
    - `AppIcon` stays the target's app icon (**Primary App Icon Set Name**). VersionIcon overwrites its images on every build: with the overlay for development builds, or with the clean original when you pass `--original` for production builds.
 
-   Keep the same entries (size, scale, idiom, platform and appearance, such as Dark and Tinted variants) in both sets. VersionIcon skips any entry that's in only one of them and prints a warning. If your icon sets have other names, pass them with `--appIcon` and `--appIconOriginal`. The names must be unique in the project, because VersionIcon uses the first `.appiconset` folder it finds with each name.
-2. **Add a Run Script phase** in your target's **Build Phases** and paste the script below.
+   Keep the same entries (size, scale, idiom, platform and appearance, such as Dark and Tinted variants) in both sets. VersionIcon skips any entry that's in only one of them and prints a warning. It reads the entries from the `Contents.json` of both sets, so it works with modern single-size asset catalogs as well as legacy multi-size ones.
+
+   If your icon sets have other names, pass them with `--appIcon` and `--appIconOriginal`. The names must be unique in the project, because VersionIcon uses the first `.appiconset` folder it finds with each name.
+2. **Add a Run Script phase** in your target's **Build Phases** with this script:
+
+   ```shell
+   VERSION_ICON_PATH="${BUILD_DIR%/Build/*}/SourcePackages/checkouts/ios-version-icon/Bin"
+
+   if [ "${CONFIGURATION}" = "Release" ]; then
+       "$VERSION_ICON_PATH/VersionIcon" --resources "$VERSION_ICON_PATH" --original
+   else
+       "$VERSION_ICON_PATH/VersionIcon" --resources "$VERSION_ICON_PATH" \
+           --ribbon Blue-TopRight.png --title Devel-TopRight.png --on-error warn
+   fi
+   ```
+
+   If your project uses other configuration names, adjust the conditions. If you use Tuist, change `VERSION_ICON_PATH` to the Tuist path from [Installation](#installation). To use your own ribbon or title artwork, pass an absolute path to a `.png` file.
 3. **Move the Run Script phase** from step 2 before the Copy Bundle Resources phase. The script must run before the icon is copied into the app.
-
-VersionIcon reads the icon entries from the `Contents.json` of both icon sets, so it works with modern single-size asset catalogs as well as legacy multi-size ones.
-
-```shell
-VERSION_ICON_PATH="${BUILD_DIR%/Build/*}/SourcePackages/checkouts/ios-version-icon/Bin"
-
-if [ "${CONFIGURATION}" = "Release" ]; then
-    "$VERSION_ICON_PATH/VersionIcon" --resources "$VERSION_ICON_PATH" --original
-else
-    "$VERSION_ICON_PATH/VersionIcon" --resources "$VERSION_ICON_PATH" \
-        --ribbon Blue-TopRight.png --title Devel-TopRight.png --on-error warn
-fi
-```
-
-If your project uses other configuration names, adjust the conditions. To use your own ribbon or title artwork, pass an absolute path to a `.png` file.
 
 ### Full example
 

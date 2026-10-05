@@ -1,4 +1,4 @@
-// swift-tools-version:5.2
+// swift-tools-version:6.0
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -6,7 +6,7 @@ import PackageDescription
 let package = Package(
     name: "VersionIcon",
     platforms: [
-        .macOS(.v10_15),
+        .macOS(.v14),
     ],
     dependencies: [
         .package(url: "https://github.com/JohnSundell/Files.git", from: "4.1.1"),
@@ -16,9 +16,13 @@ let package = Package(
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
         // Targets can depend on other targets in this package, and on products in packages which this package depends on.
-        .target(
+        .executableTarget(
             name: "VersionIcon",
-            dependencies: ["Files", "SwiftShell", "Moderator"],
+            dependencies: [
+                .product(name: "Files", package: "Files"),
+                .product(name: "SwiftShell", package: "SwiftShell"),
+                .product(name: "Moderator", package: "Moderator"),
+            ],
             swiftSettings:
             [
                 // Macro definition - uncomment only when debugging
@@ -29,5 +33,6 @@ let package = Package(
             name: "VersionIconTests",
             dependencies: ["VersionIcon"]
         ),
-    ]
+    ],
+    swiftLanguageModes: [.v5]
 )
