@@ -47,7 +47,7 @@ The package ships a prebuilt `VersionIcon` binary and its resources in the `Bin`
 
 ## Usage
 
-1. **Duplicate your app icon** in the asset catalog, so you have `AppIcon` and `AppIconOriginal`:
+1. **Duplicate your app icon** in the asset catalog and name them `AppIcon` and `AppIconOriginal`.:
    - `AppIconOriginal` is the clean source image. VersionIcon only reads it and never changes it.
    - `AppIcon` stays the target's app icon (**Primary App Icon Set Name**). VersionIcon overwrites its images on every build: with the overlay for development builds, or with the clean original when you pass `--original` for production builds.
 
