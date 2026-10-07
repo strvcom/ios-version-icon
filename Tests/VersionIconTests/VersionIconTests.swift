@@ -152,6 +152,63 @@ final class VersionIconTests: XCTestCase {
         XCTAssertNotEqual(updatedIconData, originalIconData)
     }
 
+    func testAppearanceVariantsAreMatchedSeparately() throws {
+        let projectRoot = try makeProjectFixture(appIconImages: appearanceIconImages)
+        defer { try? FileManager.default.removeItem(at: projectRoot) }
+
+        let appIconURL = projectRoot.appendingPathComponent("AppIcon.appiconset")
+        let fileNames = appearanceIconImages.map(\.filename)
+        let originalData = try fileNames.map {
+            try Data(contentsOf: appIconURL.appendingPathComponent($0))
+        }
+
+        let result = try runVersionIcon(
+            arguments: [
+                "--resources", repositoryRoot.appendingPathComponent("Bin").path,
+                "--ribbon", "Blue-TopRight.png",
+                "--title", "Devel-TopRight.png",
+            ],
+            environment: [
+                "SRCROOT": projectRoot.path,
+                "PROJECT_DIR": projectRoot.path,
+                "INFOPLIST_FILE": projectRoot.appendingPathComponent("Info.plist").path,
+            ]
+        )
+
+        XCTAssertEqual(result.exitCode, 0, result.stdout)
+        XCTAssertTrue(result.stdout.contains("Matched icon entries: 3"), result.stdout)
+        XCTAssertFalse(result.stdout.contains("Skipping"), result.stdout)
+
+        for (fileName, original) in zip(fileNames, originalData) {
+            let updated = try Data(contentsOf: appIconURL.appendingPathComponent(fileName))
+            XCTAssertNotEqual(updated, original, fileName)
+        }
+    }
+
+    func testDuplicateIconEntriesFailWithNonZeroExitCode() throws {
+        let duplicateImages = [
+            FixtureImage(size: "1024x1024", idiom: "universal", filename: "Icon.png", scale: nil, platform: "ios"),
+            FixtureImage(size: "1024x1024", idiom: "universal", filename: "Icon-Copy.png", scale: nil, platform: "ios"),
+        ]
+        let projectRoot = try makeProjectFixture(appIconImages: duplicateImages)
+        defer { try? FileManager.default.removeItem(at: projectRoot) }
+
+        let result = try runVersionIcon(
+            arguments: [
+                "--resources", repositoryRoot.appendingPathComponent("Bin").path,
+                "--original",
+            ],
+            environment: [
+                "SRCROOT": projectRoot.path,
+                "PROJECT_DIR": projectRoot.path,
+                "INFOPLIST_FILE": projectRoot.appendingPathComponent("Info.plist").path,
+            ]
+        )
+
+        XCTAssertNotEqual(result.exitCode, 0)
+        XCTAssertTrue(result.stdout.contains("Duplicate source icon metadata"), result.stdout)
+    }
+
     func testSecondRunWithSameInputsKeepsIconsUntouched() throws {
         let projectRoot = try makeProjectFixture()
         defer { try? FileManager.default.removeItem(at: projectRoot) }
@@ -298,6 +355,8 @@ final class VersionIconTests: XCTestCase {
         ("testLastRepeatedOptionWins", testLastRepeatedOptionWins),
         ("testTitleRotationMustBeWithinBounds", testTitleRotationMustBeWithinBounds),
         ("testDynamicVariantDiscoverySupportsFlashcardsStyleIconSet", testDynamicVariantDiscoverySupportsFlashcardsStyleIconSet),
+        ("testAppearanceVariantsAreMatchedSeparately", testAppearanceVariantsAreMatchedSeparately),
+        ("testDuplicateIconEntriesFailWithNonZeroExitCode", testDuplicateIconEntriesFailWithNonZeroExitCode),
         ("testSecondRunWithSameInputsKeepsIconsUntouched", testSecondRunWithSameInputsKeepsIconsUntouched),
         ("testChangedInputRegeneratesIcon", testChangedInputRegeneratesIcon),
         ("testGeneratedAssetCatalogModeLeavesSourceIconsUntouched", testGeneratedAssetCatalogModeLeavesSourceIconsUntouched),
@@ -317,6 +376,7 @@ private struct FixtureImage {
     let filename: String
     let scale: String?
     let platform: String?
+    var appearances: [[String: String]]? = nil
 }
 
 private let legacyIconImages: [FixtureImage] = [
@@ -339,6 +399,18 @@ private let flashcardsStyleIconImages: [FixtureImage] = [
     FixtureImage(size: "256x256", idiom: "mac", filename: "FlashcardsRounded(512x512) 1.png", scale: "2x", platform: nil),
     FixtureImage(size: "512x512", idiom: "mac", filename: "FlashcardsRounded(512x512) 2.png", scale: "1x", platform: nil),
     FixtureImage(size: "512x512", idiom: "mac", filename: "FlashcardsRounded.png", scale: "2x", platform: nil),
+]
+
+private let appearanceIconImages: [FixtureImage] = [
+    FixtureImage(size: "1024x1024", idiom: "universal", filename: "Icon.png", scale: nil, platform: "ios"),
+    FixtureImage(
+        size: "1024x1024", idiom: "universal", filename: "Icon-Dark.png", scale: nil, platform: "ios",
+        appearances: [["appearance": "luminosity", "value": "dark"]]
+    ),
+    FixtureImage(
+        size: "1024x1024", idiom: "universal", filename: "Icon-Tinted.png", scale: nil, platform: "ios",
+        appearances: [["appearance": "luminosity", "value": "tinted"]]
+    ),
 ]
 
 private var repositoryRoot: URL {
@@ -408,8 +480,8 @@ private func createAppIconSet(
 ) throws {
     try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
 
-    let entries = images.map { image -> [String: String] in
-        var entry = [
+    let entries = images.map { image -> [String: Any] in
+        var entry: [String: Any] = [
             "size": image.size,
             "idiom": image.idiom,
             "filename": image.filename,
@@ -420,6 +492,9 @@ private func createAppIconSet(
         }
         if let platform = image.platform {
             entry["platform"] = platform
+        }
+        if let appearances = image.appearances {
+            entry["appearances"] = appearances
         }
 
         return entry

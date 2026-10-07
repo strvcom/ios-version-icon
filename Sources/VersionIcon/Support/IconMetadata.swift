@@ -12,6 +12,7 @@ struct ImageInfo: Codable {
     var platform: String?
     var role: String?
     var subtype: String?
+    var appearances: [ImageAppearance]?
 
     static let singleScale = "1x"
 
@@ -26,13 +27,21 @@ struct ImageInfo: Codable {
             idiom: idiom,
             platform: platform,
             role: role,
-            subtype: subtype
+            subtype: subtype,
+            appearances: (appearances ?? [])
+                .map { "\($0.appearance)=\($0.value)" }
+                .sorted()
         )
     }
 
     var descriptor: String {
         variantKey.description
     }
+}
+
+struct ImageAppearance: Codable {
+    var appearance: String
+    var value: String
 }
 
 struct IconVariantKey: Hashable {
@@ -42,6 +51,7 @@ struct IconVariantKey: Hashable {
     var platform: String?
     var role: String?
     var subtype: String?
+    var appearances: [String]
 
     var description: String {
         var components = ["\(size) @\(scale)", idiom]
@@ -55,6 +65,7 @@ struct IconVariantKey: Hashable {
         if let subtype {
             components.append("subtype=\(subtype)")
         }
+        components.append(contentsOf: appearances)
 
         return components.joined(separator: ", ")
     }
